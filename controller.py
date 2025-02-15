@@ -194,8 +194,8 @@ class Controller:
         # Define a deadzone value
         self.settings = settings
         self.joystick = self.Joysticks(
-            left=Joystick("Left", 0, settings, 0, 1),
-            right=Joystick("Right", 1, settings, 2, 3),
+            left=Joystick("Left", 12, settings, 0, 1),
+            right=Joystick("Right", 13, settings, 2, 3),
         )
         self.button = self.Buttons(
             left=Button("Left", -1, settings),
@@ -249,6 +249,10 @@ class Controller:
                         self.button.zl._down()
                     elif event.button == self.button.zr.index:
                         self.button.zr._down()
+                    elif event.button == self.joystick.left.index:
+                        self.joystick.left._down()
+                    elif event.button == self.joystick.right.index:
+                        self.joystick.right._down()
                 elif event.type == JOYBUTTONUP:
                     if event.button == self.button.left.index:
                         self.button.left._up()
@@ -274,6 +278,10 @@ class Controller:
                         self.button.zl._up()
                     elif event.button == self.button.zr.index:
                         self.button.zr._up()
+                    elif event.button == self.joystick.left.index:
+                        self.joystick.left._up()
+                    elif event.button == self.joystick.right.index:
+                        self.joystick.right._up()
                 elif event.type == JOYHATMOTION:
                     if event.value[0] == -1 and not self.button.left.pressed:
                         self.button.left._down()
@@ -331,6 +339,9 @@ if __name__ == "__main__":
     )
     controller.button.left.on_double_click(
         lambda button: print(f"Button {button} double click")
+    )
+    controller.joystick.left.on_down(
+        lambda joystick: print(f"Joystick {joystick} pressed down")
     )
     # controller.gestures.on_multi_click = lambda buttons: print(
     #     f"Buttons {buttons} clicked at the same time"

@@ -2,7 +2,7 @@ import sys
 from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtGui import QPainter, QPen, QPolygonF
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QMouseEvent, QPaintEvent
+from PySide6.QtGui import QMouseEvent, QPaintEvent, QImage
 from controller import Controller
 import threading
 
@@ -12,12 +12,17 @@ class JoystickWidget(QWidget):
         super().__init__(parent)
         self.position = position
         self.diameter = diameter
+        self.pressed = False
         self.setGeometry(position[0], position[1], diameter, diameter)
+
+    def toggle_pressed(self):
+        self.pressed = not self.pressed
+        self.update()
 
     def paintEvent(self, event: QPaintEvent):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(Qt.GlobalColor.white)
+        painter.setBrush(Qt.GlobalColor.gray if self.pressed else Qt.GlobalColor.white)
         painter.drawEllipse(0, 0, self.diameter, self.diameter)
 
 
@@ -82,7 +87,7 @@ class ShoulderButtonWidget(QWidget):
 
 
 class XboxControllerOverlay(QWidget):
-    controller_size = (330, 215)
+    controller_size = (330, 220)
     controller_image = "Controller.png"
 
     left_joystick_position = (61, 49)
@@ -115,69 +120,25 @@ class XboxControllerOverlay(QWidget):
         self.resize(*self.controller_size)
         self.old_pos = None
 
-        self.left_joystick = JoystickWidget(
-            self.left_joystick_position, self.joystick_diameter, self
-        )
-        self.right_joystick = JoystickWidget(
-            self.right_joystick_position, self.joystick_diameter, self
-        )
+        # fmt: off
+        self.left_joystick = JoystickWidget(self.left_joystick_position, self.joystick_diameter, self)
+        self.right_joystick = JoystickWidget(self.right_joystick_position, self.joystick_diameter, self)
 
-        self.button_a = FaceButtonWidget(
-            self.button_right_position, self.button_diameter, "A", self
-        )
-        self.button_b = FaceButtonWidget(
-            self.button_bottom_position, self.button_diameter, "B", self
-        )
-        self.button_x = FaceButtonWidget(
-            self.button_top_position, self.button_diameter, "X", self
-        )
-        self.button_y = FaceButtonWidget(
-            self.button_left_position, self.button_diameter, "Y", self
-        )
+        self.button_a = FaceButtonWidget(self.button_right_position, self.button_diameter, "A", self)
+        self.button_b = FaceButtonWidget(self.button_bottom_position, self.button_diameter, "B", self)
+        self.button_x = FaceButtonWidget(self.button_top_position, self.button_diameter, "X", self)
+        self.button_y = FaceButtonWidget(self.button_left_position, self.button_diameter, "Y", self)
 
-        self.dpad_left = DpadButtonWidget(
-            (self.dpad_position[0], self.dpad_position[1] + self.dpad_arrow_diameter),
-            self.dpad_arrow_diameter,
-            "left",
-            self,
-        )
-        self.dpad_down = DpadButtonWidget(
-            (
-                self.dpad_position[0] + self.dpad_arrow_diameter,
-                self.dpad_position[1] + 2 * self.dpad_arrow_diameter,
-            ),
-            self.dpad_arrow_diameter,
-            "down",
-            self,
-        )
-        self.dpad_right = DpadButtonWidget(
-            (
-                self.dpad_position[0] + 2 * self.dpad_arrow_diameter,
-                self.dpad_position[1] + self.dpad_arrow_diameter,
-            ),
-            self.dpad_arrow_diameter,
-            "right",
-            self,
-        )
-        self.dpad_up = DpadButtonWidget(
-            (self.dpad_position[0] + self.dpad_arrow_diameter, self.dpad_position[1]),
-            self.dpad_arrow_diameter,
-            "up",
-            self,
-        )
+        self.dpad_left = DpadButtonWidget((self.dpad_position[0], self.dpad_position[1] + self.dpad_arrow_diameter), self.dpad_arrow_diameter, "left", self)
+        self.dpad_down = DpadButtonWidget((self.dpad_position[0] + self.dpad_arrow_diameter, self.dpad_position[1] + 2 * self.dpad_arrow_diameter), self.dpad_arrow_diameter, "down", self)
+        self.dpad_right = DpadButtonWidget((self.dpad_position[0] + 2 * self.dpad_arrow_diameter, self.dpad_position[1] + self.dpad_arrow_diameter), self.dpad_arrow_diameter, "right", self)
+        self.dpad_up = DpadButtonWidget((self.dpad_position[0] + self.dpad_arrow_diameter, self.dpad_position[1]), self.dpad_arrow_diameter, "up", self)
 
-        self.left_shoulder_button = ShoulderButtonWidget(
-            self.left_shoulder_button_outline, self
-        )
-        self.right_shoulder_button = ShoulderButtonWidget(
-            self.right_shoulder_button_outline, self
-        )
-        self.bottom_left_shoulder_button = ShoulderButtonWidget(
-            self.bottom_left_shoulder_button_outline, self
-        )
-        self.bottom_right_shoulder_button = ShoulderButtonWidget(
-            self.bottom_right_shoulder_button_outline, self
-        )
+        self.left_shoulder_button = ShoulderButtonWidget(self.left_shoulder_button_outline, self)
+        self.right_shoulder_button = ShoulderButtonWidget(self.right_shoulder_button_outline, self)
+        self.bottom_left_shoulder_button = ShoulderButtonWidget(self.bottom_left_shoulder_button_outline, self)
+        self.bottom_right_shoulder_button = ShoulderButtonWidget(self.bottom_right_shoulder_button_outline, self)
+        # fmt: on
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -198,7 +159,7 @@ class XboxControllerOverlay(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         # Draw controller body from image
-        # painter.drawImage(0, 0, self.controller_image) # TODO fix
+        painter.drawImage(0, 0, QImage(self.controller_image))
 
 
 if __name__ == "__main__":
@@ -229,6 +190,10 @@ if __name__ == "__main__":
     controller.button.zl.on_up(lambda _: window.bottom_left_shoulder_button.toggle_pressed())
     controller.button.zr.on_down(lambda _: window.bottom_right_shoulder_button.toggle_pressed())
     controller.button.zr.on_up(lambda _: window.bottom_right_shoulder_button.toggle_pressed())
+    controller.joystick.left.on_down(lambda _: window.left_joystick.toggle_pressed())
+    controller.joystick.left.on_up(lambda _: window.left_joystick.toggle_pressed())
+    controller.joystick.right.on_down(lambda _: window.right_joystick.toggle_pressed())
+    controller.joystick.right.on_up(lambda _: window.right_joystick.toggle_pressed())
     # fmt: on
 
     app = QApplication(sys.argv)
