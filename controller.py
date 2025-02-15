@@ -187,7 +187,7 @@ class Controller:
         zl: Button
         zr: Button
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings = Settings()):
         # Initialize Pygame
         pygame.init()
 
@@ -213,16 +213,16 @@ class Controller:
         )
 
     def run(self) -> None:
-        self.controller = self.get_connected_controller()
-        assert self.controller is not None, "No controller connected"
+        self.pygame_controller = self.get_connected_controller()
+        assert self.pygame_controller is not None, "No controller connected"
 
-        print(f"controller connected: {self.controller.get_name()}")
+        print(f"controller connected: {self.pygame_controller.get_name()}")
 
-        running = True
-        while running:
+        self.running = True
+        while self.running:
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    running = False
+                    self.running = False
                 elif event.type == JOYAXISMOTION:
                     if event.axis == self.joystick.left.axis_x_index:
                         self.joystick.left._move_x(event.value)
@@ -275,13 +275,13 @@ class Controller:
                     elif event.button == self.button.zr.index:
                         self.button.zr._up()
                 elif event.type == JOYHATMOTION:
-                    if event.value[0] == -1:
+                    if event.value[0] == -1 and not self.button.left.pressed:
                         self.button.left._down()
-                    if event.value[0] == 1:
+                    if event.value[0] == 1 and not self.button.right.pressed:
                         self.button.right._down()
-                    if event.value[1] == -1:
+                    if event.value[1] == 1 and not self.button.up.pressed:
                         self.button.up._down()
-                    if event.value[1] == 1:
+                    if event.value[1] == -1 and not self.button.down.pressed:
                         self.button.down._down()
                     if event.value[0] == 0 and self.button.left.pressed:
                         self.button.left._up()
@@ -311,8 +311,7 @@ class Controller:
 
 
 if __name__ == "__main__":
-    settings = Settings()
-    controller = Controller(settings)
+    controller = Controller()
     controller.joystick.left.on_move(
         lambda joystick: print(f"Joystick {joystick} moved to {joystick.position}")
     )

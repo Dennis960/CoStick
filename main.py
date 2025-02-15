@@ -3,8 +3,8 @@ from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtGui import QPainter, QPen, QPolygonF
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QMouseEvent, QPaintEvent
-from typing import Literal
-from pynput import keyboard
+from controller import Controller
+import threading
 
 
 class JoystickWidget(QWidget):
@@ -101,6 +101,10 @@ class XboxControllerOverlay(QWidget):
     right_shoulder_button_outline = [
         (330 - x, y) for x, y in left_shoulder_button_outline
     ]
+    bottom_left_shoulder_button_outline = [(56, 17), (106, 3), (101, 0), (56, 15)]
+    bottom_right_shoulder_button_outline = [
+        (330 - x, y) for x, y in bottom_left_shoulder_button_outline
+    ]
 
     def __init__(self):
         super().__init__()
@@ -168,17 +172,12 @@ class XboxControllerOverlay(QWidget):
         self.right_shoulder_button = ShoulderButtonWidget(
             self.right_shoulder_button_outline, self
         )
-
-        self.keyboard_listener = keyboard.Listener(on_press=self.on_key_press)
-        self.keyboard_listener.start()
-
-    def on_key_press(self, key: keyboard.Key):
-        try:
-            key = key.char
-        except AttributeError:
-            key = str(key)
-
-        print(key)
+        self.bottom_left_shoulder_button = ShoulderButtonWidget(
+            self.bottom_left_shoulder_button_outline, self
+        )
+        self.bottom_right_shoulder_button = ShoulderButtonWidget(
+            self.bottom_right_shoulder_button_outline, self
+        )
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -203,7 +202,42 @@ class XboxControllerOverlay(QWidget):
 
 
 if __name__ == "__main__":
+    controller = Controller()
+
+    # fmt: off
+    controller.button.a.on_down(lambda _: window.button_a.toggle_pressed())
+    controller.button.a.on_up(lambda _: window.button_a.toggle_pressed())
+    controller.button.b.on_down(lambda _: window.button_b.toggle_pressed())
+    controller.button.b.on_up(lambda _: window.button_b.toggle_pressed())
+    controller.button.x.on_down(lambda _: window.button_x.toggle_pressed())
+    controller.button.x.on_up(lambda _: window.button_x.toggle_pressed())
+    controller.button.y.on_down(lambda _: window.button_y.toggle_pressed())
+    controller.button.y.on_up(lambda _: window.button_y.toggle_pressed())
+    controller.button.left.on_down(lambda _: window.dpad_left.toggle_pressed())
+    controller.button.left.on_up(lambda _: window.dpad_left.toggle_pressed())
+    controller.button.down.on_down(lambda _: window.dpad_down.toggle_pressed())
+    controller.button.down.on_up(lambda _: window.dpad_down.toggle_pressed())
+    controller.button.right.on_down(lambda _: window.dpad_right.toggle_pressed())
+    controller.button.right.on_up(lambda _: window.dpad_right.toggle_pressed())
+    controller.button.up.on_down(lambda _: window.dpad_up.toggle_pressed())
+    controller.button.up.on_up(lambda _: window.dpad_up.toggle_pressed())
+    controller.button.l.on_down(lambda _: window.left_shoulder_button.toggle_pressed())
+    controller.button.l.on_up(lambda _: window.left_shoulder_button.toggle_pressed())
+    controller.button.r.on_down(lambda _: window.right_shoulder_button.toggle_pressed())
+    controller.button.r.on_up(lambda _: window.right_shoulder_button.toggle_pressed())
+    controller.button.zl.on_down(lambda _: window.bottom_left_shoulder_button.toggle_pressed())
+    controller.button.zl.on_up(lambda _: window.bottom_left_shoulder_button.toggle_pressed())
+    controller.button.zr.on_down(lambda _: window.bottom_right_shoulder_button.toggle_pressed())
+    controller.button.zr.on_up(lambda _: window.bottom_right_shoulder_button.toggle_pressed())
+    # fmt: on
+
     app = QApplication(sys.argv)
     window = XboxControllerOverlay()
     window.show()
-    sys.exit(app.exec())
+
+    controller_thread = threading.Thread(target=controller.run)
+    controller_thread.start()
+
+    app.exec()
+    controller.running = False
+    controller_thread.join()
