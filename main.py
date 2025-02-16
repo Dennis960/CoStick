@@ -11,11 +11,12 @@ from controller_overlay import XboxControllerOverlay
 import pyautogui
 
 CURSOR_SPEED_PIXELS_PER_SECOND = 800
-CURSOR_BOOST_SPEED = 3
+CURSOR_BOOST_SPEED = 5
 CURSOR_BOOST_ACCELERATION_DELAY = 0.2  # Cursor will wait for this time before boosting
 CURSOR_BOOST_ACCELERATION_TIME = (
     0.5  # Cursor will take this time to reach the boost speed
 )
+SCROLL_SPEED = 0.5
 
 # Remove pyautogui delays
 pyautogui.PAUSE = 0
@@ -28,21 +29,34 @@ class Cursor:
         self.last_time = time.time()
         self.boost = False
         self.boost_start_time = None
+        self.target_scroll = 0
         self.setup()
 
     def setup(self):
         self.controller.button.a.on_down(lambda button: pyautogui.mouseDown())
         self.controller.button.a.on_up(lambda button: pyautogui.mouseUp())
-        self.controller.button.a.on_down(lambda button: print("down"))
-        self.controller.button.a.on_up(lambda button: print("up"))
+
+        self.controller.button.up.on_down(lambda button: pyautogui.keyDown("up"))
+        self.controller.button.up.on_up(lambda button: pyautogui.keyUp("up"))
+        self.controller.button.down.on_down(lambda button: pyautogui.keyDown("down"))
+        self.controller.button.down.on_up(lambda button: pyautogui.keyUp("down"))
+        self.controller.button.left.on_down(lambda button: pyautogui.keyDown("left"))
+        self.controller.button.left.on_up(lambda button: pyautogui.keyUp("left"))
+        self.controller.button.right.on_down(lambda button: pyautogui.keyDown("right"))
+        self.controller.button.right.on_up(lambda button: pyautogui.keyUp("right"))
 
     def update(self):
         current_time = time.time()
         delta_time = current_time - self.last_time
         self.last_time = current_time
-        x_value = self.controller.joystick.left.x
-        y_value = self.controller.joystick.left.y
-        self.move_cursor(x_value, y_value, delta_time)
+        self.move_cursor(
+            self.controller.joystick.left.x, self.controller.joystick.left.y, delta_time
+        )
+        self.scroll(
+            self.controller.joystick.right.y,
+            self.controller.joystick.right.x,
+            delta_time,
+        )
 
     def move_cursor(self, x_value, y_value, delta_time):
         speed = pow(pow(x_value, 2) + pow(y_value, 2), 0.5)  # Between 0 and 1
@@ -78,6 +92,15 @@ class Cursor:
         distance_x = x_value * CURSOR_SPEED_PIXELS_PER_SECOND * delta_time
         distance_y = y_value * CURSOR_SPEED_PIXELS_PER_SECOND * delta_time
         pyautogui.moveRel(distance_x, distance_y)
+
+    def scroll(self, y_value, x_value, delta_time):
+        if (y_value > 0) != (self.target_scroll > 0):
+            self.target_scroll = 0
+        self.target_scroll += y_value * SCROLL_SPEED
+        if abs(self.target_scroll) >= 1:
+            scroll_amount = int(self.target_scroll)
+            self.target_scroll -= scroll_amount
+            pyautogui.scroll(-scroll_amount)
 
 
 if __name__ == "__main__":
