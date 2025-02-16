@@ -28,63 +28,70 @@ class Button:
         self._settings = settings
 
         # Event listeners
-        self._on_down: Optional[Callable[[Self], None]] = None
-        self._on_up: Optional[Callable[[Self], None]] = None
-        self._on_click: Optional[Callable[[Self], None]] = None
-        self._on_long_press: Optional[Callable[[Self], None]] = None
-        self._on_long_press_start: Optional[Callable[[Self], None]] = None
-        self._on_double_click: Optional[Callable[[Self], None]] = None
-        self._on_tripple_click: Optional[Callable[[Self], None]] = None
+        self._on_down: List[Callable[[Self], None]] = []
+        self._on_up: List[Callable[[Self], None]] = []
+        self._on_click: List[Callable[[Self], None]] = []
+        self._on_long_press: List[Callable[[Self], None]] = []
+        self._on_long_press_start: List[Callable[[Self], None]] = []
+        self._on_double_click: List[Callable[[Self], None]] = []
+        self._on_tripple_click: List[Callable[[Self], None]] = []
 
     def on_down(self, listener: Optional[Callable[[Self], None]]):
-        """Set the listener for the down event."""
-        self._on_down = listener
+        """Add a listener for the down event."""
+        if listener:
+            self._on_down.append(listener)
 
     def on_up(self, listener: Optional[Callable[[Self], None]]):
-        """Set the listener for the up event."""
-        self._on_up = listener
+        """Add a listener for the up event."""
+        if listener:
+            self._on_up.append(listener)
 
     def on_click(self, listener: Optional[Callable[[Self], None]]):
-        """Set the listener for the click event."""
-        self._on_click = listener
+        """Add a listener for the click event."""
+        if listener:
+            self._on_click.append(listener)
 
     def on_long_press(self, listener: Optional[Callable[[Self], None]]):
-        """Set the listener for the long press event."""
-        self._on_long_press = listener
+        """Add a listener for the long press event."""
+        if listener:
+            self._on_long_press.append(listener)
 
     def on_long_press_start(self, listener: Optional[Callable[[Self], None]]):
-        """Set the listener for the long press start event."""
-        self._on_long_press_start = listener
+        """Add a listener for the long press start event."""
+        if listener:
+            self._on_long_press_start.append(listener)
 
     def on_double_click(self, listener: Optional[Callable[[Self], None]]):
-        """Set the listener for the double click event."""
-        self._on_double_click = listener
+        """Add a listener for the double click event."""
+        if listener:
+            self._on_double_click.append(listener)
 
     def on_tripple_click(self, listener: Optional[Callable[[Self], None]]):
-        """Set the listener for the tripple click event."""
-        self._on_tripple_click = listener
+        """Add a listener for the tripple click event."""
+        if listener:
+            self._on_tripple_click.append(listener)
 
     def _down(self):
         """Has to be called when the button is pressed down"""
         self.pressed = True
         self._pressed_time_start = time.time()
-        if self._on_down:
-            self._on_down(self)
+        for listener in self._on_down:
+            listener(self)
 
         if (
             self._pressed_time_start - self._last_double_click_time
             <= self._settings.double_click_duration
         ):
-            if self._on_tripple_click:
-                self._on_tripple_click(self)
+            for listener in self._on_tripple_click:
+                listener(self)
             self._last_double_click_time = 0
             self._last_click_time = 0
         elif (
             self._pressed_time_start - self._last_click_time
             <= self._settings.double_click_duration
         ):
-            if self._on_double_click:
-                self._on_double_click(self)
+            for listener in self._on_double_click:
+                listener(self)
 
     def _up(self):
         """Has to be called when the button is released"""
@@ -92,17 +99,17 @@ class Button:
         self.long_pressed = False
         self._pressed_time_end = time.time()
 
-        if self._on_up:
-            self._on_up(self)
+        for listener in self._on_up:
+            listener(self)
 
         press_duration = self._pressed_time_end - self._pressed_time_start
 
         if press_duration > self._settings.single_click_duration:
-            if self._on_long_press:
-                self._on_long_press(self)
+            for listener in self._on_long_press:
+                listener(self)
         else:
-            if self._on_click:
-                self._on_click(self)
+            for listener in self._on_click:
+                listener(self)
             self._last_click_time = self._pressed_time_end
 
     def _update(self):
@@ -111,8 +118,8 @@ class Button:
             press_duration = time.time() - self._pressed_time_start
             if press_duration > self._settings.single_click_duration:
                 self.long_pressed = True
-                if self._on_long_press_start:
-                    self._on_long_press_start(self)
+                for listener in self._on_long_press_start:
+                    listener(self)
 
     def __str__(self):
         return self.name
@@ -130,40 +137,42 @@ class Joystick(Button):
         super().__init__(name, index, settings)
         self.axis_x_index = axis_x_index
         self.axis_y_index = axis_y_index
-        self.position = (0, 0)
+        self.x = 0
+        self.y = 0
 
         # Event listeners
-        self._on_move: Optional[Callable[[Self], None]] = None
+        self._on_move: List[Callable[[Self], None]] = []
 
     def on_move(self, listener: Optional[Callable[[Self], None]]):
-        """Set the listener for the move event."""
-        self._on_move = listener
+        """Add a listener for the move event."""
+        if listener:
+            self._on_move.append(listener)
 
     def _move_x(self, value):
         """Has to be called when the joystick axis changes value. Ignores movements within the deadzone. Does not ignore going into and out of the deadzone."""
         if abs(value) > self._settings.deadzone:
-            new_position = (value, self.position[1])
+            new_x = value
         else:
-            if self.position[0] != 0:
-                new_position = (0, self.position[1])
+            if self.x != 0:
+                new_x = 0
             else:
                 return
-        self.position = new_position
-        if self._on_move:
-            self._on_move(self)
+        self.x = new_x
+        for listener in self._on_move:
+            listener(self)
 
     def _move_y(self, value):
         """Has to be called when the joystick axis changes value. Ignores movements within the deadzone. Does not ignore going into and out of the deadzone."""
         if abs(value) > self._settings.deadzone:
-            new_position = (self.position[0], value)
+            new_y = value
         else:
-            if self.position[1] != 0:
-                new_position = (self.position[0], 0)
+            if self.y != 0:
+                new_y = 0
             else:
                 return
-        self.position = new_position
-        if self._on_move:
-            self._on_move(self)
+        self.y = new_y
+        for listener in self._on_move:
+            listener(self)
 
 
 class Controller:
@@ -211,13 +220,24 @@ class Controller:
             zl=Button("ZL", 7, settings),
             zr=Button("ZR", 8, settings),
         )
+        self.pygame_controller = None
+
+    def on_joy_disconnect(self):
+        print("Controller disconnected")
+        self.pygame_controller = None
+
+    def on_joy_connect(self):
+        if not self.pygame_controller:
+            self.pygame_controller = self.get_connected_controller()
+            if self.pygame_controller:
+                print(f"controller connected: {self.pygame_controller.get_name()}")
 
     def run(self) -> None:
-        self.pygame_controller = self.get_connected_controller()
-        assert self.pygame_controller is not None, "No controller connected"
+        # Initialize the controller
+        pygame.joystick.init()
+        self.on_joy_connect()
 
-        print(f"controller connected: {self.pygame_controller.get_name()}")
-
+        self.last_joy_connection_check = time.time()
         self.running = True
         while self.running:
             for event in pygame.event.get():
@@ -299,17 +319,23 @@ class Controller:
                         self.button.up._up()
                     if event.value[1] == 0 and self.button.down.pressed:
                         self.button.down._up()
-
+                elif event.type == JOYDEVICEREMOVED:
+                    self.on_joy_disconnect()
+                elif event.type == JOYDEVICEADDED:
+                    self.on_joy_connect()
+            if (
+                not self.pygame_controller
+                and time.time() - self.last_joy_connection_check > 1
+            ):
+                self.on_joy_connect()
+                continue
+            time.sleep(0)
         # Quit Pygame
         pygame.quit()
 
     def get_connected_controller(self) -> pygame.joystick.JoystickType | None:
-        # Initialize the controller
-        pygame.joystick.init()
-
         # Check for controller
         if pygame.joystick.get_count() == 0:
-            print("No joystick connected")
             return None
 
         # Get the first controller
@@ -321,10 +347,10 @@ class Controller:
 if __name__ == "__main__":
     controller = Controller()
     controller.joystick.left.on_move(
-        lambda joystick: print(f"Joystick {joystick} moved to {joystick.position}")
+        lambda joystick: print(f"Joystick {joystick} moved to {joystick.x}, {joystick.y}")
     )
     controller.joystick.right.on_move(
-        lambda joystick: print(f"Joystick {joystick} moved to {joystick.position}")
+        lambda joystick: print(f"Joystick {joystick} moved to {joystick.x}, {joystick.y}")
     )
     controller.button.left.on_down(
         lambda button: print(f"Button {button} pressed down")
