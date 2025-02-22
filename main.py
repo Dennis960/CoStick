@@ -82,7 +82,7 @@ class Cursor:
                     controller_stick_event_name,
                     lambda stick, action=action: self.toggle_mode(action.mode),
                 )
-            elif action.action == "move_cursor":
+            elif action.action == "mouse_move":
                 pass
             elif action.action == "scroll":
                 pass
