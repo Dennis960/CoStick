@@ -153,7 +153,7 @@ ComputerAction = (
     | ComputerTypeAction
 )
 """Represents a single discrete action that can be performed on the computer."""
-ComputerNavigation = ComputerMouseMoveAction | ComputerScrollAction
+ComputerNavigationAction = ComputerMouseMoveAction | ComputerScrollAction
 """Represents a continuous navigation action that can be performed on the computer."""
 
 
@@ -194,8 +194,8 @@ class Mode(BaseModel):
             dict[
                 ControllerStickEventName,
                 SwitchModeAction
-                | ComputerNavigation
-                | list[ComputerNavigation | SwitchModeAction],
+                | ComputerNavigationAction
+                | list[ComputerNavigationAction | SwitchModeAction],
             ],
         ]
         | None
@@ -353,6 +353,10 @@ default_config = Config(
                     "down": ComputerMouseDownAction(button="right"),
                     "up": ComputerMouseUpAction(button="right"),
                 },
+                "face_up": {
+                    "down": ComputerMouseDownAction(button="middle"),
+                    "up": ComputerMouseUpAction(button="middle"),
+                },
                 "stick_right": {
                     "down": ComputerMouseDownAction(button="middle"),
                     "up": ComputerMouseUpAction(button="middle"),
@@ -389,6 +393,14 @@ default_config = Config(
                 "dpad_left": {
                     "down": ComputerKeyDownAction(key="ctrl"),
                     "up": ComputerKeyUpAction(key="ctrl"),
+                },
+                "dpad_right": {
+                    "down": ComputerKeyDownAction(key="cmd"),
+                    "up": ComputerKeyUpAction(key="cmd"),
+                },
+                "dpad_down": {
+                    "down": ComputerKeyDownAction(key="alt"),
+                    "up": ComputerKeyUpAction(key="alt"),
                 },
             },
             multi_button_actions=[

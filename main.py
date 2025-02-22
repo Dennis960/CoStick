@@ -18,6 +18,8 @@ pyautogui.FAILSAFE = False
 
 
 class Cursor:
+    mode: Mode
+
     def __init__(
         self, window: XboxControllerOverlay, controller: Controller, config: Config
     ):
@@ -63,6 +65,30 @@ class Cursor:
                 print(f"Action {action.action} not found")
         # fmt: on
 
+    def add_stick_action_listeners(
+        self,
+        controller_stick_name: ControllerStickName,
+        controller_stick_event_name: ControllerStickEventName,
+        actions: list[ComputerNavigationAction, SwitchModeAction],
+    ):
+        stick = self.controller.sticks.get(controller_stick_name, None)
+        if stick is None:
+            print(f"Stick {controller_stick_name} not found")
+            return
+
+        for action in actions:
+            if action.action == "switch_mode":
+                stick.add_event_listener(
+                    controller_stick_event_name,
+                    lambda stick, action=action: self.toggle_mode(action.mode),
+                )
+            elif action.action == "move_cursor":
+                pass
+            elif action.action == "scroll":
+                pass
+            else:
+                print(f"Action {action.action} not found")
+
     def toggle_mode(self, mode_name: str):
         print(f"Switching to mode {mode_name}")
         self.controller.remove_all_listeners()
@@ -70,47 +96,88 @@ class Cursor:
             self.controller
         )  # TODO make this better by not removing the listeners in the first place
 
-        mode = config.modes.get(mode_name, None)
-        if mode is None:
-            print(f"Mode {mode} not found. Falling back to default mode")
-            mode = config.modes["default"]
+        self.mode = config.modes.get(mode_name, None)
+        if self.mode is None:
+            print(f"Mode {self.mode} not found. Falling back to default mode")
+            self.mode = config.modes["default"]
         # insert all actions from global mode which are not defined in the current mode
         global_mode = config.modes["global"]
-        if mode.button_actions is None:
-            mode.button_actions = {}
-        if mode.stick_actions is None:
-            mode.stick_actions = {}
+        if self.mode.button_actions is None:
+            self.mode.button_actions = {}
+        if self.mode.stick_actions is None:
+            self.mode.stick_actions = {}
         if global_mode.button_actions is not None:
             for (
                 controller_button_name,
                 action_details,
             ) in global_mode.button_actions.items():
-                if controller_button_name not in mode.button_actions:
-                    mode.button_actions[controller_button_name] = action_details
+                if controller_button_name not in self.mode.button_actions:
+                    self.mode.button_actions[controller_button_name] = action_details
         if global_mode.stick_actions is not None:
             for (
                 controller_stick_name,
                 action_details,
             ) in global_mode.stick_actions.items():
-                if controller_stick_name not in mode.stick_actions:
-                    mode.stick_actions[controller_stick_name] = action_details
+                if controller_stick_name not in self.mode.stick_actions:
+                    self.mode.stick_actions[controller_stick_name] = action_details
 
-        for controller_button_name, action_details in mode.button_actions.items():
-            for controller_button_type_event, actions in action_details.items():
+        for controller_button_name, action_details in self.mode.button_actions.items():
+            for controller_button_event_name, actions in action_details.items():
                 if not isinstance(actions, list):
                     actions = [actions]
                 self.add_button_action_listeners(
-                    controller_button_name, controller_button_type_event, actions
+                    controller_button_name, controller_button_event_name, actions
+                )
+
+        for controller_stick_name, action_details in self.mode.stick_actions.items():
+            for controller_stick_event_name, actions in action_details.items():
+                if not isinstance(actions, list):
+                    actions = [actions]
+                self.add_stick_action_listeners(
+                    controller_stick_name, controller_stick_event_name, actions
                 )
 
     def setup(self):
         self.toggle_mode("default")
 
+    def on_update_stick_move_event(
+        self,
+        delta_time: float,
+        controller_stick_name: ControllerStickName,
+        action: ComputerNavigationAction,
+    ):
+        stick = self.controller.sticks.get(controller_stick_name, None)
+        if stick is None:
+            print(f"Stick {controller_stick_name} not found")
+            return
+
+        if action.action == "mouse_move":
+            self.move_cursor(stick.x, stick.y, delta_time)
+        elif action.action == "scroll":
+            self.scroll(stick.y, stick.x, delta_time)
+        else:
+            print(f"Action {action.action} not found")
+
     def update(self):
         current_time = time.time()
         delta_time = current_time - self.last_time
         self.last_time = current_time
-        # TODO navigation actions
+
+        for controller_stick_name, action_details in self.mode.stick_actions.items():
+            for controller_stick_event_name, actions in action_details.items():
+                if not isinstance(actions, list):
+                    actions = [actions]
+                for action in [
+                    actions for actions in actions if actions.action != "switch_mode"
+                ]:
+                    if controller_stick_event_name == "move":
+                        self.on_update_stick_move_event(
+                            delta_time,
+                            controller_stick_name,
+                            action,
+                        )
+                    else:
+                        print(f"Event {controller_stick_event_name} not found")
 
     def move_cursor(self, x_value, y_value, delta_time):
         speed = pow(pow(x_value, 2) + pow(y_value, 2), 0.5)  # Between 0 and 1
