@@ -270,30 +270,6 @@ default_config = Config(
     modes={
         "global": Mode(
             button_actions={
-                "dpad_up": {
-                    "down": ComputerKeyDownAction(key="up"),
-                    "up": ComputerKeyUpAction(key="up"),
-                },
-                "dpad_down": {
-                    "down": ComputerKeyDownAction(key="down"),
-                    "up": ComputerKeyUpAction(key="down"),
-                },
-                "dpad_left": {
-                    "down": ComputerKeyDownAction(key="left"),
-                    "up": ComputerKeyUpAction(key="left"),
-                },
-                "dpad_right": {
-                    "down": ComputerKeyDownAction(key="right"),
-                    "up": ComputerKeyUpAction(key="right"),
-                },
-                "face_right": {
-                    "down": ComputerKeyDownAction(key="shift"),
-                    "up": ComputerKeyUpAction(key="shift"),
-                },
-                "face_down": {
-                    "down": ComputerKeyDownAction(key="ctrl"),
-                    "up": ComputerKeyUpAction(key="ctrl"),
-                },
                 "home": {
                     "down": SwitchModeAction(mode="default"),
                 },
@@ -364,6 +340,10 @@ default_config = Config(
                 "shoulder_l": {
                     "click": SwitchModeAction(mode="typing"),
                 },
+                "shoulder_zr": {
+                    "down": ComputerKeyDownAction(key="ctrl"),
+                    "up": ComputerKeyUpAction(key="ctrl"),
+                },
             },
             stick_actions={
                 "stick_left": {
@@ -375,6 +355,32 @@ default_config = Config(
             },
         ),
         "selection": Mode(
+            button_actions={
+                "dpad_up": {
+                    "down": ComputerKeyDownAction(key="up"),
+                    "up": ComputerKeyUpAction(key="up"),
+                },
+                "dpad_down": {
+                    "down": ComputerKeyDownAction(key="down"),
+                    "up": ComputerKeyUpAction(key="down"),
+                },
+                "dpad_left": {
+                    "down": ComputerKeyDownAction(key="left"),
+                    "up": ComputerKeyUpAction(key="left"),
+                },
+                "dpad_right": {
+                    "down": ComputerKeyDownAction(key="right"),
+                    "up": ComputerKeyUpAction(key="right"),
+                },
+                "face_right": {
+                    "down": ComputerKeyDownAction(key="shift"),
+                    "up": ComputerKeyUpAction(key="shift"),
+                },
+                "face_down": {
+                    "down": ComputerKeyDownAction(key="ctrl"),
+                    "up": ComputerKeyUpAction(key="ctrl"),
+                },
+            },
             stick_actions={
                 "stick_right": {
                     "move": SwitchModeAction(mode="default"),

@@ -23,95 +23,57 @@ class Button:
         self._settings = settings
 
         # Event listeners
-        self._on_down: List[Callable[[Self], None]] = []
-        self._on_up: List[Callable[[Self], None]] = []
-        self._on_click: List[Callable[[Self], None]] = []
-        self._on_long_press: List[Callable[[Self], None]] = []
-        self._on_long_press_start: List[Callable[[Self], None]] = []
-        self._on_double_click: List[Callable[[Self], None]] = []
-        self._on_tripple_click: List[Callable[[Self], None]] = []
-
-    def on_down(self, listener: Callable[[Self], None]):
-        """Add a listener for the down event."""
-        self._on_down.append(listener)
-
-    def on_up(self, listener: Callable[[Self], None]):
-        """Add a listener for the up event."""
-        self._on_up.append(listener)
-
-    def on_click(self, listener: Callable[[Self], None]):
-        """Add a listener for the click event."""
-        self._on_click.append(listener)
-
-    def on_long_press(self, listener: Callable[[Self], None]):
-        """Add a listener for the long press event."""
-        self._on_long_press.append(listener)
-
-    def on_long_press_start(self, listener: Callable[[Self], None]):
-        """Add a listener for the long press start event."""
-        self._on_long_press_start.append(listener)
-
-    def on_double_click(self, listener: Callable[[Self], None]):
-        """Add a listener for the double click event."""
-        self._on_double_click.append(listener)
-
-    def on_tripple_click(self, listener: Callable[[Self], None]):
-        """Add a listener for the tripple click event."""
-        self._on_tripple_click.append(listener)
+        self.event_listeners: list[
+            tuple[ControllerButtonEventName, Callable[[Self], None]]
+        ] = []
 
     def add_event_listener(
         self,
         controller_button_event_name: ControllerButtonEventName,
         listener: Callable[[Self], None],
     ):
-        if controller_button_event_name == "down":
-            self.on_down(listener)
-        elif controller_button_event_name == "up":
-            self.on_up(listener)
-        elif controller_button_event_name == "click":
-            self.on_click(listener)
-        elif controller_button_event_name == "long_press":
-            self.on_long_press(listener)
-        elif controller_button_event_name == "long_press_start":
-            self.on_long_press_start(listener)
-        elif controller_button_event_name == "double_click":
-            self.on_double_click(listener)
-        elif controller_button_event_name == "tripple_click":
-            self.on_tripple_click(listener)
-        else:
-            print(f"Invalid event name: {controller_button_event_name}")
+        """Add a listener for the given event."""
+        self.event_listeners.append((controller_button_event_name, listener))
 
-    def remove_all_listeners(self):
-        """Remove all listeners"""
-        self._on_down = []
-        self._on_up = []
-        self._on_click = []
-        self._on_long_press = []
-        self._on_long_press_start = []
-        self._on_double_click = []
-        self._on_tripple_click
+    def get_event_listeners(
+        self, controller_button_event_name: ControllerButtonEventName
+    ):
+        """Get all listeners for the given event."""
+        return [
+            listener
+            for event_name, listener in self.event_listeners
+            if event_name == controller_button_event_name
+        ]
+
+    def call_event_listeners(
+        self, controller_stick_event_name: ControllerStickEventName
+    ):
+        """Call all listeners for the given event in the order they were added."""
+        for listener in self.get_event_listeners(controller_stick_event_name):
+            listener(self)
+
+    def remove_all_event_listeners(self):
+        """Remove all event listeners"""
+        self.event_listeners = []
 
     def _down(self):
         """Has to be called when the button is pressed down"""
         self.pressed = True
         self._pressed_time_start = time.time()
-        for listener in self._on_down:
-            listener(self)
+        self.call_event_listeners("down")
 
         if (
             self._pressed_time_start - self._last_double_click_time
             <= self._settings.double_click_duration
         ):
-            for listener in self._on_tripple_click:
-                listener(self)
+            self.call_event_listeners("triple_click")
             self._last_double_click_time = 0
             self._last_click_time = 0
         elif (
             self._pressed_time_start - self._last_click_time
             <= self._settings.double_click_duration
         ):
-            for listener in self._on_double_click:
-                listener(self)
+            self.call_event_listeners("double_click")
 
     def _up(self):
         """Has to be called when the button is released"""
@@ -119,17 +81,14 @@ class Button:
         self.long_pressed = False
         self._pressed_time_end = time.time()
 
-        for listener in self._on_up:
-            listener(self)
+        self.call_event_listeners("up")
 
         press_duration = self._pressed_time_end - self._pressed_time_start
 
         if press_duration > self._settings.single_click_duration:
-            for listener in self._on_long_press:
-                listener(self)
+            self.call_event_listeners("long_press")
         else:
-            for listener in self._on_click:
-                listener(self)
+            self.call_event_listeners("click")
             self._last_click_time = self._pressed_time_end
 
     def _update(self):
@@ -138,8 +97,7 @@ class Button:
             press_duration = time.time() - self._pressed_time_start
             if press_duration > self._settings.single_click_duration:
                 self.long_pressed = True
-                for listener in self._on_long_press_start:
-                    listener(self)
+                self.call_event_listeners("long_press_start")
 
     def __str__(self):
         return self.name
@@ -161,26 +119,38 @@ class Stick:
         self.y = 0
 
         # Event listeners
-        self._on_move: List[Callable[[Self], None]] = []
-
-    def on_move(self, listener: Callable[[Self], None]):
-        """Add a listener for the move event."""
-        if listener:
-            self._on_move.append(listener)
+        self.event_listeners: list[
+            tuple[ControllerStickEventName, Callable[[Self], None]]
+        ] = []
 
     def add_event_listener(
         self,
         controller_stick_event_name: ControllerStickEventName,
         listener: Callable[[Self], None],
     ):
-        if controller_stick_event_name == "move":
-            self.on_move(listener)
-        else:
-            print(f"Invalid event name: {controller_stick_event_name}")
+        """Add a listener for the given event."""
+        self.event_listeners.append((controller_stick_event_name, listener))
 
-    def remove_all_listeners(self):
+    def get_event_listeners(
+        self, controller_stick_event_name: ControllerStickEventName
+    ):
+        """Get all listeners for the given event."""
+        return [
+            listener
+            for event_name, listener in self.event_listeners
+            if event_name == controller_stick_event_name
+        ]
+
+    def call_event_listeners(
+        self, controller_stick_event_name: ControllerStickEventName
+    ):
+        """Call all listeners for the given event in the order they were added."""
+        for listener in self.get_event_listeners(controller_stick_event_name):
+            listener(self)
+
+    def remove_all_event_listeners(self):
         """Remove all listeners"""
-        self._on_move = []
+        self.event_listeners = []
 
     def _move_x(self, value):
         """Has to be called when the joystick axis changes value. Ignores movements within the deadzone. Does not ignore going into and out of the deadzone."""
@@ -192,8 +162,7 @@ class Stick:
             else:
                 return
         self.x = new_x
-        for listener in self._on_move:
-            listener(self)
+        self.call_event_listeners("move")
 
     def _move_y(self, value):
         """Has to be called when the joystick axis changes value. Ignores movements within the deadzone. Does not ignore going into and out of the deadzone."""
@@ -205,8 +174,7 @@ class Stick:
             else:
                 return
         self.y = new_y
-        for listener in self._on_move:
-            listener(self)
+        self.call_event_listeners("move")
 
     def __str__(self):
         return self.name
@@ -247,6 +215,9 @@ class Controller:
             self.sticks |= {controller_stick_name: stick}
 
         self.pygame_controller = None
+
+        # Event listeners
+        self._on_multi_button: List[Callable[[list[Button]], None]] = []
 
     def handle_joy_disconnect(self):
         print("Controller disconnected")
@@ -346,11 +317,21 @@ class Controller:
         controller.init()
         return controller
 
-    def remove_all_listeners(self):
+    def add_multi_button_event_listener(
+        self,
+        controller_button_event_name: ControllerButtonEventName,
+        controller_button_names: list[ControllerButtonName],
+        listener: Callable[[list[Button]], None],
+    ):
+        """Add a listener for the multi button event."""
+        self._on_multi_button.append(listener)
+
+    def remove_all_event_listeners(self):
         for button in self.buttons.values():
-            button.remove_all_listeners()
+            button.remove_all_event_listeners()
         for stick in self.sticks.values():
-            stick.remove_all_listeners()
+            stick.remove_all_event_listeners()
+        self._on_multi_button = []
 
 
 if __name__ == "__main__":
@@ -358,10 +339,12 @@ if __name__ == "__main__":
 
     controller = Controller(default_config)
     for button in controller.buttons.values():
-        button.on_click(lambda button: print(f"Button {button} clicked"))
+        button.add_event_listener(
+            "click", lambda button: print(f"Button {button} clicked")
+        )
     for stick in controller.sticks.values():
-        stick.on_move(
-            lambda stick: print(f"Stick {stick} moved to {stick.x}, {stick.y}")
+        stick.add_event_listener(
+            "move", lambda stick: print(f"Stick {stick} moved to {stick.x}, {stick.y}")
         )
     # controller.gestures.on_multi_click = lambda buttons: print(
     #     f"Buttons {buttons} clicked at the same time"

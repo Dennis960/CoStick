@@ -91,7 +91,7 @@ class Cursor:
 
     def toggle_mode(self, mode_name: str):
         print(f"Switching to mode {mode_name}")
-        self.controller.remove_all_listeners()
+        self.controller.remove_all_event_listeners()
         self.window.init_controller_event_listeners(
             self.controller
         )  # TODO make this better by not removing the listeners in the first place
@@ -106,6 +106,8 @@ class Cursor:
             self.mode.button_actions = {}
         if self.mode.stick_actions is None:
             self.mode.stick_actions = {}
+        if self.mode.multi_button_actions is None:
+            self.mode.multi_button_actions = []
         if global_mode.button_actions is not None:
             for (
                 controller_button_name,
@@ -136,6 +138,10 @@ class Cursor:
                 self.add_stick_action_listeners(
                     controller_stick_name, controller_stick_event_name, actions
                 )
+
+        for multi_button_action in self.mode.multi_button_actions:
+            for controller_button_event_name, actions in multi_button_action.actions.items():
+                self.controller.add_multi_button_event_listener(controller_button_event_name, multi_button_action.buttons, lambda buttons, actions=actions: self.on_multi_button_event(buttons, actions))
 
     def setup(self):
         self.toggle_mode("default")
