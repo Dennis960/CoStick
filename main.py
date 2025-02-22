@@ -32,6 +32,24 @@ class Cursor:
         self.target_scroll = 0
         self.setup()
 
+    def execute_action(self, action: ComputerAction | SwitchModeAction):
+        if action.action == "switch_mode":
+            self.toggle_mode(action.mode)
+        elif action.action == "key_down":
+            pyautogui.keyDown(action.key)
+        elif action.action == "key_up":
+            pyautogui.keyUp(action.key)
+        elif action.action == "mouse_down":
+            pyautogui.mouseDown(button=action.button)
+        elif action.action == "mouse_up":
+            pyautogui.mouseUp(button=action.button)
+        elif action.action == "type":
+            pyautogui.typewrite(action.text)
+        elif action.action == "key_press":
+            pyautogui.press(action.key)
+        else:
+            print(f"Action {action.action} not found")
+
     def add_button_action_listeners(
         self,
         controller_button_name: ControllerButtonName,
@@ -45,25 +63,11 @@ class Cursor:
             return
 
         # Add the listeners
-        # fmt: off
         for action in actions:
-            if action.action == "switch_mode":
-                button.add_event_listener(controller_button_event_name, lambda button, action=action: self.toggle_mode(action.mode))
-            elif action.action == "key_down":
-                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.keyDown(action.key))
-            elif action.action == "key_up":
-                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.keyUp(action.key))
-            elif action.action == "mouse_down":
-                button.add_event_listener(controller_button_event_name, lambda button: pyautogui.mouseDown(button=action.button))
-            elif action.action == "mouse_up":
-                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.mouseUp(button=action.button))
-            elif action.action == "type":
-                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.typewrite(action.text))
-            elif action.action == "key_press":
-                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.press(action.key))
-            else:
-                print(f"Action {action.action} not found")
-        # fmt: on
+            button.add_event_listener(
+                controller_button_event_name,
+                lambda button, action=action: self.execute_action(action),
+            )
 
     def add_stick_action_listeners(
         self,
@@ -88,6 +92,13 @@ class Cursor:
                 pass
             else:
                 print(f"Action {action.action} not found")
+
+    def on_multi_button_event(
+        self,
+        actions: list[ComputerAction | SwitchModeAction],
+    ):
+        for action in actions:
+            self.execute_action(action)
 
     def toggle_mode(self, mode_name: str):
         print(f"Switching to mode {mode_name}")
@@ -140,8 +151,19 @@ class Cursor:
                 )
 
         for multi_button_action in self.mode.multi_button_actions:
-            for controller_button_event_name, actions in multi_button_action.actions.items():
-                self.controller.add_multi_button_event_listener(controller_button_event_name, multi_button_action.buttons, lambda buttons, actions=actions: self.on_multi_button_event(buttons, actions))
+            for (
+                controller_button_event_name,
+                actions,
+            ) in multi_button_action.actions.items():
+                if not isinstance(actions, list):
+                    actions = [actions]
+                self.controller.add_multi_button_event_listener(
+                    controller_button_event_name,
+                    multi_button_action.buttons,
+                    lambda buttons, actions=actions: self.on_multi_button_event(
+                        actions
+                    ),
+                )
 
     def setup(self):
         self.toggle_mode("default")

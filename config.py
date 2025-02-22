@@ -36,7 +36,6 @@ ControllerButtonEventName = Literal[
     "up",
     "click",
     "long_press",
-    "long_press_start",
     "double_click",
     "tripple_click",
 ]
