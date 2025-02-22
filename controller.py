@@ -299,12 +299,12 @@ class Controller:
 
     def get_buttons_allowed_for_multi_button_event(self) -> list[Button]:
         """Return a list of all buttons that are part of any multi button event."""
-        button_names = []
+        allowed_button_names = []
         for _, button_names, _ in self.multi_button_event_listeners:
             for button_name in button_names:
-                if button_name not in button_names:
-                    button_names.append(button_name)
-        return [self.buttons[button_name] for button_name in button_names]
+                if button_name not in allowed_button_names:
+                    allowed_button_names.append(button_name)
+        return [self.buttons[button_name] for button_name in allowed_button_names]
 
     def get_pressed_multi_buttons(self) -> list[Button]:
         """Return a list of all buttons that are pressed and part of any multi button event."""
