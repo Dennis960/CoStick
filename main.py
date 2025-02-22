@@ -1,11 +1,11 @@
 import sys
+from typing import Literal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer
 from PySide6.QtCore import Qt
 from controller import Controller
 import threading
 import time
-import math
 
 from controller_overlay import XboxControllerOverlay
 import pyautogui
@@ -30,11 +30,28 @@ class Cursor:
         self.boost = False
         self.boost_start_time = None
         self.target_scroll = 0
+        self.mode: Literal["mouse", "selection"] = "mouse"
         self.setup()
 
     def setup(self):
-        self.controller.button.a.on_down(lambda button: pyautogui.mouseDown())
-        self.controller.button.a.on_up(lambda button: pyautogui.mouseUp())
+        def on_button_down(button: Controller.Button):
+            if button == Controller.Button.A:
+                pyautogui.mouseDown() if self.mode == "mouse" else pyautogui.keyDown("shift")
+            elif button == Controller.Button.B:
+                pyautogui.mouseDown(button="right") if self.mode == "mouse" else pyautogui.keyDown("ctrl")
+            elif button == Controller.Button.UP:
+                pyautogui.keyDown("up")
+            elif button == Controller.Button.DOWN:
+                pyautogui.keyDown("down")
+            elif button == Controller.Button.LEFT:
+                pyautogui.keyDown("left")
+            elif button == Controller.Button.RIGHT:
+                pyautogui.keyDown("right")
+        self.controller.button.on_down()
+        self.controller.button.a.on_down(lambda button: pyautogui.mouseDown() if self.mode == "mouse" else pyautogui.keyDown("shift"))
+        self.controller.button.a.on_up(lambda button: pyautogui.mouseUp() if self.mode == "mouse" else pyautogui.keyUp("shift"))
+        self.controller.button.b.on_down(lambda button: pyautogui.mouseDown(button="right") if self.mode == "mouse" else pyautogui.keyDown("ctrl"))
+        self.controller.button.b.on_up(lambda button: pyautogui.mouseUp(button="right") if self.mode == "mouse" else pyautogui.keyUp("ctrl"))
 
         self.controller.button.up.on_down(lambda button: pyautogui.keyDown("up"))
         self.controller.button.up.on_up(lambda button: pyautogui.keyUp("up"))
@@ -44,6 +61,20 @@ class Cursor:
         self.controller.button.left.on_up(lambda button: pyautogui.keyUp("left"))
         self.controller.button.right.on_down(lambda button: pyautogui.keyDown("right"))
         self.controller.button.right.on_up(lambda button: pyautogui.keyUp("right"))
+
+        def on_move(joystick):
+            self.mode = "mouse"
+
+        self.controller.joystick.left.on_move(on_move)
+        self.controller.joystick.right.on_move(on_move)
+
+        def on_dpad(button):
+            self.mode = "selection"
+        
+        self.controller.button.up.on_down(on_dpad)
+        self.controller.button.down.on_down(on_dpad)
+        self.controller.button.left.on_down(on_dpad)
+        self.controller.button.right.on_down(on_dpad)
 
     def update(self):
         current_time = time.time()

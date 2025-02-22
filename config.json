@@ -1,0 +1,870 @@
+{
+    "settings": {
+        "controller": {
+            "deadzone": 0.1,
+            "single_click_duration": 0.6,
+            "double_click_duration": 0.2,
+            "multi_click_duration": 0.2
+        },
+        "cursor": {
+            "cursor_speed_pixels_per_second": 800,
+            "cursor_boost_speed": 5,
+            "cursor_boost_acceleration_delay": 0.2,
+            "cursor_boost_acceleration_time": 0.5,
+            "scroll_speed": 0.5
+        }
+    },
+    "button_mapping": {
+        "dpad_up": "dpad-y",
+        "dpad_down": "dpad+y",
+        "dpad_left": "dpad-x",
+        "dpad_right": "dpad+x",
+        "face_down": 0,
+        "face_right": 1,
+        "face_up": 2,
+        "face_left": 3,
+        "shoulder_l": 5,
+        "shoulder_r": 6,
+        "shoulder_zl": 7,
+        "shoulder_zr": 8,
+        "stick_left": 12,
+        "stick_right": 13
+    },
+    "stick_mapping": {
+        "stick_left": [
+            0,
+            1
+        ],
+        "stick_right": [
+            2,
+            3
+        ]
+    },
+    "modes": {
+        "default": {
+            "button_actions": {
+                "dpad_up": {
+                    "down": {
+                        "action": "key_down",
+                        "key": "up"
+                    },
+                    "up": {
+                        "action": "key_up",
+                        "key": "up"
+                    }
+                },
+                "dpad_down": {
+                    "down": {
+                        "action": "key_down",
+                        "key": "down"
+                    },
+                    "up": {
+                        "action": "key_up",
+                        "key": "down"
+                    }
+                },
+                "dpad_left": {
+                    "down": {
+                        "action": "key_down",
+                        "key": "left"
+                    },
+                    "up": {
+                        "action": "key_up",
+                        "key": "left"
+                    }
+                },
+                "dpad_right": {
+                    "down": {
+                        "action": "key_down",
+                        "key": "right"
+                    },
+                    "up": {
+                        "action": "key_up",
+                        "key": "right"
+                    }
+                },
+                "face_right": {
+                    "down": {
+                        "action": "mouse_down",
+                        "button": "left"
+                    },
+                    "up": {
+                        "action": "mouse_up",
+                        "button": "left"
+                    }
+                },
+                "face_down": {
+                    "down": {
+                        "action": "mouse_down",
+                        "button": "right"
+                    },
+                    "up": {
+                        "action": "mouse_up",
+                        "button": "right"
+                    }
+                },
+                "stick_right": {
+                    "down": {
+                        "action": "mouse_down",
+                        "button": "middle"
+                    },
+                    "up": {
+                        "action": "mouse_up",
+                        "button": "middle"
+                    }
+                },
+                "minus": {
+                    "down": [
+                        {
+                            "action": "key_down",
+                            "key": "ctrl"
+                        },
+                        {
+                            "action": "key_down",
+                            "key": "c"
+                        }
+                    ],
+                    "up": [
+                        {
+                            "action": "key_up",
+                            "key": "ctrl"
+                        },
+                        {
+                            "action": "key_up",
+                            "key": "c"
+                        }
+                    ]
+                },
+                "plus": {
+                    "down": [
+                        {
+                            "action": "key_down",
+                            "key": "ctrl"
+                        },
+                        {
+                            "action": "key_down",
+                            "key": "v"
+                        }
+                    ],
+                    "up": [
+                        {
+                            "action": "key_up",
+                            "key": "ctrl"
+                        },
+                        {
+                            "action": "key_up",
+                            "key": "v"
+                        }
+                    ]
+                },
+                "home": {
+                    "down": [
+                        {
+                            "action": "switch_mode",
+                            "mode": "default"
+                        },
+                        {
+                            "action": "key_down",
+                            "key": "esc"
+                        }
+                    ],
+                    "up": [
+                        {
+                            "action": "switch_mode",
+                            "mode": "default"
+                        },
+                        {
+                            "action": "key_up",
+                            "key": "esc"
+                        }
+                    ]
+                },
+                "shoulder_l": {
+                    "click": {
+                        "action": "switch_mode",
+                        "mode": "typing"
+                    }
+                }
+            },
+            "stick_actions": {
+                "stick_left": {
+                    "move": {
+                        "action": "mouse_move"
+                    }
+                },
+                "stick_right": {
+                    "move": {
+                        "action": "scroll"
+                    }
+                }
+            },
+            "multi_button_actions": null
+        },
+        "selection": {
+            "button_actions": {
+                "face_right": {
+                    "down": {
+                        "action": "key_down",
+                        "key": "shift"
+                    },
+                    "up": {
+                        "action": "key_up",
+                        "key": "shift"
+                    }
+                },
+                "face_down": {
+                    "down": {
+                        "action": "key_down",
+                        "key": "ctrl"
+                    },
+                    "up": {
+                        "action": "key_up",
+                        "key": "ctrl"
+                    }
+                }
+            },
+            "stick_actions": {
+                "stick_right": {
+                    "move": {
+                        "action": "switch_mode",
+                        "mode": "default"
+                    }
+                },
+                "stick_left": {
+                    "move": {
+                        "action": "switch_mode",
+                        "mode": "default"
+                    }
+                }
+            },
+            "multi_button_actions": null
+        },
+        "typing": {
+            "button_actions": {
+                "dpad_up": {
+                    "down": {
+                        "action": "key_down",
+                        "key": "shift"
+                    },
+                    "up": {
+                        "action": "key_up",
+                        "key": "shift"
+                    }
+                },
+                "dpad_left": {
+                    "down": {
+                        "action": "key_down",
+                        "key": "ctrl"
+                    },
+                    "up": {
+                        "action": "key_up",
+                        "key": "ctrl"
+                    }
+                }
+            },
+            "stick_actions": null,
+            "multi_button_actions": [
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "face_right"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "a"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "a"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "face_down"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "b"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "b"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "face_left"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "c"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "c"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "face_up"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "d"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "d"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zl",
+                        "face_right"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "e"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "e"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zl",
+                        "face_down"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "f"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "f"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zl",
+                        "face_left"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "g"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "g"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zl",
+                        "face_up"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "h"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "h"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_r",
+                        "face_right"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "i"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "i"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_r",
+                        "face_down"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "j"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "j"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_r",
+                        "face_left"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "k"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "k"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_r",
+                        "face_up"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "l"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "l"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zr",
+                        "face_right"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "m"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "m"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zr",
+                        "face_down"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "n"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "n"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zr",
+                        "face_left"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "o"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "o"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zr",
+                        "face_up"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "p"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "p"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_r",
+                        "face_right"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "q"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "q"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_r",
+                        "face_down"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "r"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "r"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_r",
+                        "face_left"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "s"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "s"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_r",
+                        "face_up"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "t"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "t"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zl",
+                        "shoulder_r",
+                        "face_right"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "u"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "u"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zl",
+                        "shoulder_r",
+                        "face_down"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "v"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "v"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zl",
+                        "shoulder_r",
+                        "face_left"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "w"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "w"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_zl",
+                        "shoulder_r",
+                        "face_up"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "x"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "x"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_zr",
+                        "face_right"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "y"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "y"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_zr",
+                        "face_down"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "z"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "z"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_zr",
+                        "face_left"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "1"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "1"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_zr",
+                        "face_up"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "2"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "2"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "face_right"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "3"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "3"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "face_down"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "4"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "4"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "face_left"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "5"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "5"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "face_up"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "6"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "6"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "face_right"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "7"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "7"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "face_down"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "8"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "8"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "face_left"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "9"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "9"
+                        }
+                    }
+                },
+                {
+                    "buttons": [
+                        "shoulder_l",
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "face_up"
+                    ],
+                    "actions": {
+                        "down": {
+                            "action": "key_down",
+                            "key": "0"
+                        },
+                        "up": {
+                            "action": "key_up",
+                            "key": "0"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

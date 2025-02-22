@@ -4,15 +4,6 @@ from typing import Callable, Optional, List, Tuple, Self
 from dataclasses import dataclass
 import time
 
-
-@dataclass
-class Settings:
-    deadzone: float = 0.1
-    single_click_duration: float = 0.6
-    double_click_duration: float = 0.2
-    multi_click_duration: float = 0.2
-
-
 class Button:
     def __init__(self, name: str, index: int, settings: Settings):
         self.name = name
@@ -176,6 +167,10 @@ class Joystick(Button):
 
 
 class Controller:
+    Joystick = Joystick
+    Button = Button
+    Settings = Settings
+
     @dataclass
     class Joysticks:
         left: Joystick
@@ -347,10 +342,14 @@ class Controller:
 if __name__ == "__main__":
     controller = Controller()
     controller.joystick.left.on_move(
-        lambda joystick: print(f"Joystick {joystick} moved to {joystick.x}, {joystick.y}")
+        lambda joystick: print(
+            f"Joystick {joystick} moved to {joystick.x}, {joystick.y}"
+        )
     )
     controller.joystick.right.on_move(
-        lambda joystick: print(f"Joystick {joystick} moved to {joystick.x}, {joystick.y}")
+        lambda joystick: print(
+            f"Joystick {joystick} moved to {joystick.x}, {joystick.y}"
+        )
     )
     controller.button.left.on_down(
         lambda button: print(f"Button {button} pressed down")
