@@ -63,6 +63,9 @@ class Cursor:
 
     def toggle_mode(self, mode_name: str):
         self.controller.remove_all_listeners()
+        self.window.init_controller_event_listeners(
+            self.controller
+        )  # TODO make this better by not removing the listeners in the first place
 
         mode = config.modes.get(mode_name, None)
         if mode is None:
@@ -158,7 +161,7 @@ if __name__ == "__main__":
 
     controller = Controller(config)
 
-    window.init_controller(controller)
+    window.init_controller_event_listeners(controller)
 
     controller_thread = threading.Thread(target=controller.run)
     controller_thread.start()

@@ -166,7 +166,7 @@ class XboxControllerOverlay(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.drawImage(0, 0, QImage(self.controller_image))
 
-    def init_controller(self, controller: Controller):
+    def init_controller_event_listeners(self, controller: Controller):
         # fmt: off
         controller.buttons["face_right"].on_down(lambda button: self.button_a.set_pressed(button.pressed))
         controller.buttons["face_right"].on_up(lambda button: self.button_a.set_pressed(button.pressed))
