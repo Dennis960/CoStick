@@ -93,7 +93,7 @@ class ShoulderButtonWidget(QWidget):
         painter.drawPolygon(QPolygonF([QPointF(*point) for point in self.outline]))
 
 
-class XboxControllerOverlay(QWidget):
+class ControllerOverlay(QWidget):
     controller_size = (330, 220)
     controller_image = "Controller.png"
 

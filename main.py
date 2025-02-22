@@ -7,7 +7,7 @@ from controller import Controller
 import threading
 import time
 
-from controller_overlay import XboxControllerOverlay
+from controller_overlay import ControllerOverlay
 from config import *
 import pyautogui
 
@@ -21,7 +21,7 @@ class Cursor:
     mode: Mode
 
     def __init__(
-        self, window: XboxControllerOverlay, controller: Controller, config: Config
+        self, window: ControllerOverlay, controller: Controller, config: Config
     ):
         self.window = window
         self.controller = controller
@@ -273,7 +273,7 @@ class Cursor:
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = XboxControllerOverlay()
+    window = ControllerOverlay()
     config = Config.load_config()
     window.show()
 
