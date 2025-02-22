@@ -614,28 +614,28 @@ default_config = Config(
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_r", "shoulder_zl", "face_right"],
+                    buttons=["shoulder_zr", "shoulder_zl", "face_right"],
                     actions={
                         "down": ComputerKeyDownAction(key="3"),
                         "up": ComputerKeyUpAction(key="3"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_r", "shoulder_zl", "face_down"],
+                    buttons=["shoulder_zr", "shoulder_zl", "face_down"],
                     actions={
                         "down": ComputerKeyDownAction(key="4"),
                         "up": ComputerKeyUpAction(key="4"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_r", "shoulder_zl", "face_left"],
+                    buttons=["shoulder_zr", "shoulder_zl", "face_left"],
                     actions={
                         "down": ComputerKeyDownAction(key="5"),
                         "up": ComputerKeyUpAction(key="5"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_r", "shoulder_zl", "face_up"],
+                    buttons=["shoulder_zr", "shoulder_zl", "face_up"],
                     actions={
                         "down": ComputerKeyDownAction(key="6"),
                         "up": ComputerKeyUpAction(key="6"),
