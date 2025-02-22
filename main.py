@@ -46,19 +46,19 @@ class Cursor:
         # fmt: off
         for action in actions:
             if action.action == "switch_mode":
-                button.add_event_listener(controller_button_event_name, lambda button: self.toggle_mode(action.mode))
+                button.add_event_listener(controller_button_event_name, lambda button, action=action: self.toggle_mode(action.mode))
             elif action.action == "key_down":
-                button.add_event_listener(controller_button_event_name, lambda button: pyautogui.keyDown(action.key))
+                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.keyDown(action.key))
             elif action.action == "key_up":
-                button.add_event_listener(controller_button_event_name, lambda button: pyautogui.keyUp(action.key))
+                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.keyUp(action.key))
             elif action.action == "mouse_down":
                 button.add_event_listener(controller_button_event_name, lambda button: pyautogui.mouseDown(button=action.button))
             elif action.action == "mouse_up":
-                button.add_event_listener(controller_button_event_name, lambda button: pyautogui.mouseUp(button=action.button))
+                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.mouseUp(button=action.button))
             elif action.action == "type":
-                button.add_event_listener(controller_button_event_name, lambda button: pyautogui.typewrite(action.text))
+                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.typewrite(action.text))
             elif action.action == "key_press":
-                button.add_event_listener(controller_button_event_name, lambda button: pyautogui.press(action.key))
+                button.add_event_listener(controller_button_event_name, lambda button, action=action: pyautogui.press(action.key))
             else:
                 print(f"Action {action.action} not found")
         # fmt: on
