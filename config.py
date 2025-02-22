@@ -403,6 +403,14 @@ default_config = Config(
                     "up": ComputerKeyUpAction(key="alt"),
                 },
             },
+            stick_actions={
+                "stick_left": {
+                    "move": SwitchModeAction(mode="default"),
+                },
+                "stick_right": {
+                    "move": ComputerScrollAction(),
+                },
+            },
             multi_button_actions=[
                 MultiControllerButtonAction(
                     buttons=["shoulder_l", "face_right"],
