@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Literal
 import os
 
+ModeName = Literal["default", "global"] | str
 
 KeyboardKey = str
 """A key on the keyboard. For example: "a", "b", "c", "1", "2", "3", "up", "down", "left", "right" etc."""
@@ -133,7 +134,7 @@ class SwitchModeAction(BaseModel):
     """Action to switch the mode of the application."""
 
     action: Literal["switch_mode"] = "switch_mode"
-    mode: Literal["default"] | str
+    mode: ModeName
 
 
 class ComputerTypeAction(BaseModel):
@@ -204,7 +205,7 @@ class Config(BaseModel):
     """Mapping of controller buttons to their respective index used by pygame or the axis of the dpad for the dpad buttons."""
     stick_mapping: dict[ControllerStickName, tuple[int, int]]
     """Mapping of controller sticks to their respective axis indices used by pygame."""
-    modes: dict[str, Mode]
+    modes: dict[ModeName, Mode]
     """Mapping of mode names to their respective mode configurations."""
 
     @classmethod
@@ -263,6 +264,13 @@ default_config = Config(
         "stick_right": (2, 3),
     },
     modes={
+        "global": Mode(
+            button_actions={
+                "home": {
+                    "down": SwitchModeAction(mode="default"),
+                },
+            }
+        ),
         "default": Mode(
             button_actions={
                 "dpad_up": {
@@ -312,9 +320,6 @@ default_config = Config(
                         ComputerKeyUpAction(key="ctrl"),
                         ComputerKeyUpAction(key="v"),
                     ],
-                },
-                "home": {
-                    "down": SwitchModeAction(mode="default"),
                 },
                 "shoulder_l": {
                     "click": SwitchModeAction(mode="typing"),
@@ -620,10 +625,8 @@ default_config = Config(
 
 
 if __name__ == "__main__":
-    with open("config.json", "w") as f:
-        f.write(default_config.model_dump_json(indent=4))
-    with open("config.json", "r") as f:
-        new_config = Config.model_validate_json(f.read())
+    default_config_string = default_config.model_dump_json(indent=4)
+    new_config = Config.model_validate_json(default_config_string)
     assert (
         default_config.model_dump() == new_config.model_dump()
     ), "Default config is not valid!"

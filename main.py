@@ -65,7 +65,6 @@ class Cursor:
 
     def toggle_mode(self, mode_name: str):
         print(f"Switching to mode {mode_name}")
-        default_mode = config.modes["default"]
         self.controller.remove_all_listeners()
         self.window.init_controller_event_listeners(
             self.controller
@@ -74,23 +73,25 @@ class Cursor:
         mode = config.modes.get(mode_name, None)
         if mode is None:
             print(f"Mode {mode} not found. Falling back to default mode")
-            mode = default_mode
-        else:
-            # insert all actions from default mode which are not defined in the current mode
-            if mode.button_actions is None:
-                mode.button_actions = {}
-            if mode.stick_actions is None:
-                mode.stick_actions = {}
+            mode = config.modes["default"]
+        # insert all actions from global mode which are not defined in the current mode
+        global_mode = config.modes["global"]
+        if mode.button_actions is None:
+            mode.button_actions = {}
+        if mode.stick_actions is None:
+            mode.stick_actions = {}
+        if global_mode.button_actions is not None:
             for (
                 controller_button_name,
                 action_details,
-            ) in default_mode.button_actions.items():
+            ) in global_mode.button_actions.items():
                 if controller_button_name not in mode.button_actions:
                     mode.button_actions[controller_button_name] = action_details
+        if global_mode.stick_actions is not None:
             for (
                 controller_stick_name,
                 action_details,
-            ) in default_mode.stick_actions.items():
+            ) in global_mode.stick_actions.items():
                 if controller_stick_name not in mode.stick_actions:
                     mode.stick_actions[controller_stick_name] = action_details
 
