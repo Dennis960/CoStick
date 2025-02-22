@@ -165,10 +165,6 @@
                     "down": {
                         "action": "switch_mode",
                         "mode": "default"
-                    },
-                    "up": {
-                        "action": "switch_mode",
-                        "mode": "default"
                     }
                 },
                 "shoulder_l": {

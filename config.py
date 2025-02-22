@@ -96,6 +96,13 @@ class ComputerKeyUpAction(BaseModel):
     key: KeyboardKey
 
 
+class ComputerKeyPressAction(BaseModel):
+    """Action to press and release a key on the computer."""
+
+    action: Literal["key_press"] = "key_press"
+    key: KeyboardKey
+
+
 class ComputerMouseMoveAction(BaseModel):
     """Action to move the mouse."""
 
@@ -139,6 +146,7 @@ class ComputerTypeAction(BaseModel):
 ComputerAction = (
     ComputerKeyDownAction
     | ComputerKeyUpAction
+    | ComputerKeyPressAction
     | ComputerMouseDownAction
     | ComputerMouseUpAction
     | ComputerTypeAction
@@ -307,7 +315,6 @@ default_config = Config(
                 },
                 "home": {
                     "down": SwitchModeAction(mode="default"),
-                    "up": SwitchModeAction(mode="default"),
                 },
                 "shoulder_l": {
                     "click": SwitchModeAction(mode="typing"),
