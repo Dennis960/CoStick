@@ -1,12 +1,13 @@
 from pydantic import BaseModel
 from typing import Literal
+import os
 
 
 KeyboardKey = str
 """A key on the keyboard. For example: "a", "b", "c", "1", "2", "3", "up", "down", "left", "right" etc."""
-MouseButton = Literal["left", "middle", "right"]
+MouseButtonName = Literal["left", "middle", "right"]
 """A mouse button."""
-ControllerButton = Literal[
+ControllerButtonName = Literal[
     "dpad_up",
     "dpad_down",
     "dpad_left",
@@ -27,14 +28,23 @@ ControllerButton = Literal[
     "capture",
 ]
 """A button on the controller."""
-ControllerStick = Literal["stick_left", "stick_right"]
+ControllerStickName = Literal["stick_left", "stick_right"]
 """A stick on the controller."""
-ControllerButtonEventType = Literal[
-    "down", "up", "click", "long_press", "double_click", "tripple_click"
+ControllerButtonEventName = Literal[
+    "down",
+    "up",
+    "click",
+    "long_press",
+    "long_press_start",
+    "double_click",
+    "tripple_click",
 ]
-"""An event type for a button of the controller being pressed or released."""
-ControllerStickEventType = Literal["move"]
-"""An event type for a stick of the controller being moved."""
+"""An event name for a button of the controller being pressed or released."""
+ControllerStickEventName = Literal["move"]
+"""An event name for a stick of the controller being moved."""
+
+ControllerButtonIndex = int | Literal["dpad-y", "dpad+y", "dpad-x", "dpad+x"]
+"""Index of a button on the controller or the direction of the dpad buttons."""
 
 
 class ControllerSettings(BaseModel):
@@ -68,61 +78,61 @@ class CursorSettings(BaseModel):
 class Settings(BaseModel):
     """Settings for the application."""
 
-    controller: ControllerSettings
-    cursor: CursorSettings
+    controller_settings: ControllerSettings
+    cursor_settings: CursorSettings
 
 
 class ComputerKeyDownAction(BaseModel):
     """Action to press a key on the computer."""
 
-    action: str = "key_down"
+    action: Literal["key_down"] = "key_down"
     key: KeyboardKey
 
 
 class ComputerKeyUpAction(BaseModel):
     """Action to release a key on the computer."""
 
-    action: str = "key_up"
+    action: Literal["key_up"] = "key_up"
     key: KeyboardKey
 
 
 class ComputerMouseMoveAction(BaseModel):
     """Action to move the mouse."""
 
-    action: str = "mouse_move"
+    action: Literal["mouse_move"] = "mouse_move"
 
 
 class ComputerMouseDownAction(BaseModel):
     """Action to press the mouse button."""
 
-    action: str = "mouse_down"
-    button: MouseButton
+    action: Literal["mouse_down"] = "mouse_down"
+    button: MouseButtonName
 
 
 class ComputerMouseUpAction(BaseModel):
     """Action to release the mouse button."""
 
-    action: str = "mouse_up"
-    button: MouseButton
+    action: Literal["mouse_up"] = "mouse_up"
+    button: MouseButtonName
 
 
 class ComputerScrollAction(BaseModel):
     """Action to scroll the computer."""
 
-    action: str = "scroll"
+    action: Literal["scroll"] = "scroll"
 
 
 class SwitchModeAction(BaseModel):
     """Action to switch the mode of the application."""
 
-    action: str = "switch_mode"
+    action: Literal["switch_mode"] = "switch_mode"
     mode: Literal["default"] | str
 
 
 class ComputerTypeAction(BaseModel):
     """Action to type text on the computer."""
 
-    action: str = "type"
+    action: Literal["type"] = "type"
     text: str
 
 
@@ -132,10 +142,9 @@ ComputerAction = (
     | ComputerMouseDownAction
     | ComputerMouseUpAction
     | ComputerTypeAction
-    | SwitchModeAction
 )
 """Represents a single discrete action that can be performed on the computer."""
-ComputerNavigation = ComputerMouseMoveAction | ComputerScrollAction | SwitchModeAction
+ComputerNavigation = ComputerMouseMoveAction | ComputerScrollAction
 """Represents a continuous navigation action that can be performed on the computer."""
 
 
@@ -144,8 +153,12 @@ class MultiControllerButtonAction(BaseModel):
     Defines a set of actions to be performed when a set of buttons are pressed or released during a multi-button event.
     """
 
-    buttons: list[ControllerButton]
-    actions: dict[ControllerButtonEventType, ComputerAction | list[ComputerAction]]
+    action: Literal["multi_button"] = "multi_button"
+    buttons: list[ControllerButtonName]
+    actions: dict[
+        ControllerButtonEventName,
+        SwitchModeAction | ComputerAction | list[ComputerAction],
+    ]
 
 
 class Mode(BaseModel):
@@ -156,16 +169,20 @@ class Mode(BaseModel):
 
     button_actions: (
         dict[
-            ControllerButton,
-            dict[ControllerButtonEventType, ComputerAction | list[ComputerAction]],
+            ControllerButtonName,
+            dict[
+                ControllerButtonEventName,
+                SwitchModeAction | ComputerAction | list[ComputerAction],
+            ],
         ]
         | None
     ) = None
     stick_actions: (
         dict[
-            ControllerStick,
+            ControllerStickName,
             dict[
-                ControllerStickEventType, ComputerNavigation | list[ComputerNavigation]
+                ControllerStickEventName,
+                SwitchModeAction | ComputerNavigation | list[ComputerNavigation],
             ],
         ]
         | None
@@ -175,25 +192,37 @@ class Mode(BaseModel):
 
 class Config(BaseModel):
     settings: Settings
-    button_mapping: dict[
-        ControllerButton, int | Literal["dpad-y", "dpad+y", "dpad-x", "dpad+x"]
-    ]
+    button_mapping: dict[ControllerButtonName, ControllerButtonIndex]
     """Mapping of controller buttons to their respective index used by pygame or the axis of the dpad for the dpad buttons."""
-    stick_mapping: dict[ControllerStick, tuple[int, int]]
+    stick_mapping: dict[ControllerStickName, tuple[int, int]]
     """Mapping of controller sticks to their respective axis indices used by pygame."""
     modes: dict[str, Mode]
     """Mapping of mode names to their respective mode configurations."""
 
+    @classmethod
+    def load_config(cls, path: str = "config.json") -> "Config":
+        if not os.path.exists(path):
+            print(f"Config file not found at {path}. Using default config.")
+            return default_config
+        with open(path, "r") as f:
+            config = cls.model_validate_json(f.read())
+            print(f"Config loaded from {path}.")
+            return config
 
-config = Config(
+    def save_config(self, path: str = "config.json"):
+        with open(path, "w") as f:
+            f.write(self.model_dump_json(indent=4))
+
+
+default_config = Config(
     settings=Settings(
-        controller=ControllerSettings(
+        controller_settings=ControllerSettings(
             deadzone=0.1,
             single_click_duration=0.6,
             double_click_duration=0.2,
             multi_click_duration=0.2,
         ),
-        cursor=CursorSettings(
+        cursor_settings=CursorSettings(
             cursor_speed_pixels_per_second=800,
             cursor_boost_speed=5,
             cursor_boost_acceleration_delay=0.2,
@@ -216,6 +245,10 @@ config = Config(
         "shoulder_zr": 8,
         "stick_left": 12,
         "stick_right": 13,
+        "capture": 4,
+        "minus": 9,
+        "plus": 10,
+        "home": 11,
     },
     stick_mapping={
         "stick_left": (0, 1),
@@ -273,14 +306,8 @@ config = Config(
                     ],
                 },
                 "home": {
-                    "down": [
-                        SwitchModeAction(mode="default"),
-                        ComputerKeyDownAction(key="esc"),
-                    ],
-                    "up": [
-                        SwitchModeAction(mode="default"),
-                        ComputerKeyUpAction(key="esc"),
-                    ],
+                    "down": SwitchModeAction(mode="default"),
+                    "up": SwitchModeAction(mode="default"),
                 },
                 "shoulder_l": {
                     "click": SwitchModeAction(mode="typing"),
@@ -587,8 +614,10 @@ config = Config(
 
 if __name__ == "__main__":
     with open("config.json", "w") as f:
-        f.write(config.model_dump_json(indent=4))
+        f.write(default_config.model_dump_json(indent=4))
     with open("config.json", "r") as f:
         new_config = Config.model_validate_json(f.read())
-    assert config.model_dump() == new_config.model_dump(), "Config is not valid!"
-    print("Config is valid!")
+    assert (
+        default_config.model_dump() == new_config.model_dump()
+    ), "Default config is not valid!"
+    print("Default config is valid!")

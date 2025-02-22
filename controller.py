@@ -3,11 +3,15 @@ from pygame.locals import *
 from typing import Callable, Optional, List, Tuple, Self
 from dataclasses import dataclass
 import time
+from config import *
+
 
 class Button:
-    def __init__(self, name: str, index: int, settings: Settings):
+    def __init__(
+        self, name: str, index: ControllerButtonIndex, settings: ControllerSettings
+    ):
         self.name = name
-        self.index = index
+        self.index: ControllerButtonIndex = index
         self.pressed = False
         self.long_pressed = False
 
@@ -27,40 +31,65 @@ class Button:
         self._on_double_click: List[Callable[[Self], None]] = []
         self._on_tripple_click: List[Callable[[Self], None]] = []
 
-    def on_down(self, listener: Optional[Callable[[Self], None]]):
+    def on_down(self, listener: Callable[[Self], None]):
         """Add a listener for the down event."""
-        if listener:
-            self._on_down.append(listener)
+        self._on_down.append(listener)
 
-    def on_up(self, listener: Optional[Callable[[Self], None]]):
+    def on_up(self, listener: Callable[[Self], None]):
         """Add a listener for the up event."""
-        if listener:
-            self._on_up.append(listener)
+        self._on_up.append(listener)
 
-    def on_click(self, listener: Optional[Callable[[Self], None]]):
+    def on_click(self, listener: Callable[[Self], None]):
         """Add a listener for the click event."""
-        if listener:
-            self._on_click.append(listener)
+        self._on_click.append(listener)
 
-    def on_long_press(self, listener: Optional[Callable[[Self], None]]):
+    def on_long_press(self, listener: Callable[[Self], None]):
         """Add a listener for the long press event."""
-        if listener:
-            self._on_long_press.append(listener)
+        self._on_long_press.append(listener)
 
-    def on_long_press_start(self, listener: Optional[Callable[[Self], None]]):
+    def on_long_press_start(self, listener: Callable[[Self], None]):
         """Add a listener for the long press start event."""
-        if listener:
-            self._on_long_press_start.append(listener)
+        self._on_long_press_start.append(listener)
 
-    def on_double_click(self, listener: Optional[Callable[[Self], None]]):
+    def on_double_click(self, listener: Callable[[Self], None]):
         """Add a listener for the double click event."""
-        if listener:
-            self._on_double_click.append(listener)
+        self._on_double_click.append(listener)
 
-    def on_tripple_click(self, listener: Optional[Callable[[Self], None]]):
+    def on_tripple_click(self, listener: Callable[[Self], None]):
         """Add a listener for the tripple click event."""
-        if listener:
-            self._on_tripple_click.append(listener)
+        self._on_tripple_click.append(listener)
+
+    def add_event_listener(
+        self,
+        controller_button_event_name: ControllerButtonEventName,
+        listener: Callable[[Self], None],
+    ):
+        if controller_button_event_name == "down":
+            self.on_down(listener)
+        elif controller_button_event_name == "up":
+            self.on_up(listener)
+        elif controller_button_event_name == "click":
+            self.on_click(listener)
+        elif controller_button_event_name == "long_press":
+            self.on_long_press(listener)
+        elif controller_button_event_name == "long_press_start":
+            self.on_long_press_start(listener)
+        elif controller_button_event_name == "double_click":
+            self.on_double_click(listener)
+        elif controller_button_event_name == "tripple_click":
+            self.on_tripple_click(listener)
+        else:
+            print(f"Invalid event name: {controller_button_event_name}")
+
+    def remove_all_listeners(self):
+        """Remove all listeners"""
+        self._on_down = []
+        self._on_up = []
+        self._on_click = []
+        self._on_long_press = []
+        self._on_long_press_start = []
+        self._on_double_click = []
+        self._on_tripple_click
 
     def _down(self):
         """Has to be called when the button is pressed down"""
@@ -116,28 +145,42 @@ class Button:
         return self.name
 
 
-class Joystick(Button):
+class Stick:
     def __init__(
         self,
         name: str,
-        index: int,
-        settings: Settings,
         axis_x_index: int,
         axis_y_index: int,
+        settings: ControllerSettings,
     ):
-        super().__init__(name, index, settings)
+        self.name = name
         self.axis_x_index = axis_x_index
         self.axis_y_index = axis_y_index
+        self._settings = settings
         self.x = 0
         self.y = 0
 
         # Event listeners
         self._on_move: List[Callable[[Self], None]] = []
 
-    def on_move(self, listener: Optional[Callable[[Self], None]]):
+    def on_move(self, listener: Callable[[Self], None]):
         """Add a listener for the move event."""
         if listener:
             self._on_move.append(listener)
+
+    def add_event_listener(
+        self,
+        controller_stick_event_name: ControllerStickEventName,
+        listener: Callable[[Self], None],
+    ):
+        if controller_stick_event_name == "move":
+            self.on_move(listener)
+        else:
+            print(f"Invalid event name: {controller_stick_event_name}")
+
+    def remove_all_listeners(self):
+        """Remove all listeners"""
+        self._on_move = []
 
     def _move_x(self, value):
         """Has to be called when the joystick axis changes value. Ignores movements within the deadzone. Does not ignore going into and out of the deadzone."""
@@ -165,72 +208,105 @@ class Joystick(Button):
         for listener in self._on_move:
             listener(self)
 
+    def __str__(self):
+        return self.name
+
 
 class Controller:
-    Joystick = Joystick
+    Stick = Stick
     Button = Button
-    Settings = Settings
 
-    @dataclass
-    class Joysticks:
-        left: Joystick
-        right: Joystick
-
-    @dataclass
-    class Buttons:
-        left: Button
-        right: Button
-        up: Button
-        down: Button
-        a: Button
-        b: Button
-        x: Button
-        y: Button
-        l: Button
-        r: Button
-        zl: Button
-        zr: Button
-
-    def __init__(self, settings: Settings = Settings()):
+    def __init__(self, config: Config):
         # Initialize Pygame
         pygame.init()
 
-        # Define a deadzone value
-        self.settings = settings
-        self.joystick = self.Joysticks(
-            left=Joystick("Left", 12, settings, 0, 1),
-            right=Joystick("Right", 13, settings, 2, 3),
-        )
-        self.button = self.Buttons(
-            left=Button("Left", -1, settings),
-            right=Button("Right", -1, settings),
-            up=Button("Up", -1, settings),
-            down=Button("Down", -1, settings),
-            b=Button("B", 0, settings),
-            a=Button("A", 1, settings),
-            x=Button("X", 2, settings),
-            y=Button("Y", 3, settings),
-            l=Button("L", 5, settings),
-            r=Button("R", 6, settings),
-            zl=Button("ZL", 7, settings),
-            zr=Button("ZR", 8, settings),
-        )
+        self.config = config
+        self.buttons: dict[ControllerButtonName, Button] = {}
+        self.sticks: dict[ControllerStickName, Stick] = {}
+        for (
+            controller_button_name,
+            controller_button_index,
+        ) in config.button_mapping.items():
+            button = Button(
+                name=controller_button_name,
+                index=controller_button_index,
+                settings=config.settings.controller_settings,
+            )
+            self.buttons |= {controller_button_name: button}
+
+        for controller_stick_name, (
+            axis_x_index,
+            axis_y_index,
+        ) in config.stick_mapping.items():
+            stick = Stick(
+                name=controller_stick_name,
+                axis_x_index=axis_x_index,
+                axis_y_index=axis_y_index,
+                settings=config.settings.controller_settings,
+            )
+            self.sticks |= {controller_stick_name: stick}
+
         self.pygame_controller = None
 
-    def on_joy_disconnect(self):
+    def handle_joy_disconnect(self):
         print("Controller disconnected")
         self.pygame_controller = None
 
-    def on_joy_connect(self):
+    def handle_joy_connect(self):
         if not self.pygame_controller:
             self.pygame_controller = self.get_connected_controller()
             if self.pygame_controller:
                 print(f"controller connected: {self.pygame_controller.get_name()}")
 
+    def handle_joy_axis_motion(self, event: pygame.event.Event):
+        assert event.type == JOYAXISMOTION
+        axis: int = event.axis
+        value: float = event.value
+        for stick in self.sticks.values():
+            if axis == stick.axis_x_index:
+                stick._move_x(value)
+            elif axis == stick.axis_y_index:
+                stick._move_y(value)
+
+    def handle_joy_button_down(self, event: pygame.event.Event):
+        assert event.type == JOYBUTTONDOWN
+        button_index: int = event.button
+        for button in self.buttons.values():
+            if button.index == button_index:
+                button._down()
+
+    def handle_joy_button_up(self, event: pygame.event.Event):
+        assert event.type == JOYBUTTONUP
+        button_index: int = event.button
+        for button in self.buttons.values():
+            if button.index == button_index:
+                button._up()
+
+    def handle_joy_hat_motion(self, event: pygame.event.Event):
+        assert event.type == JOYHATMOTION
+        value: tuple[int, int] = event.value
+        for button in self.buttons.values():
+            if button.index == "dpad+x" and value[0] == 1 and not button.pressed:
+                button._down()
+            if button.index == "dpad-x" and value[0] == -1 and not button.pressed:
+                button._down()
+            if button.index == "dpad+y" and value[1] == -1 and not button.pressed:
+                button._down()
+            if button.index == "dpad-y" and value[1] == 1 and not button.pressed:
+                button._down()
+            if button.index == "dpad+x" and value[0] == 0 and button.pressed:
+                button._up()
+            if button.index == "dpad-x" and value[0] == 0 and button.pressed:
+                button._up()
+            if button.index == "dpad+y" and value[1] == 0 and button.pressed:
+                button._up()
+            if button.index == "dpad-y" and value[1] == 0 and button.pressed:
+                button._up()
+
     def run(self) -> None:
         # Initialize the controller
         pygame.joystick.init()
-        self.on_joy_connect()
+        self.handle_joy_connect()
 
         self.last_joy_connection_check = time.time()
         self.running = True
@@ -239,90 +315,22 @@ class Controller:
                 if event.type == QUIT:
                     self.running = False
                 elif event.type == JOYAXISMOTION:
-                    if event.axis == self.joystick.left.axis_x_index:
-                        self.joystick.left._move_x(event.value)
-                    elif event.axis == self.joystick.left.axis_y_index:
-                        self.joystick.left._move_y(event.value)
-                    elif event.axis == self.joystick.right.axis_x_index:
-                        self.joystick.right._move_x(event.value)
-                    elif event.axis == self.joystick.right.axis_y_index:
-                        self.joystick.right._move_y(event.value)
+                    self.handle_joy_axis_motion(event)
                 elif event.type == JOYBUTTONDOWN:
-                    if event.button == self.button.a.index:
-                        self.button.a._down()
-                    elif event.button == self.button.b.index:
-                        self.button.b._down()
-                    elif event.button == self.button.x.index:
-                        self.button.x._down()
-                    elif event.button == self.button.y.index:
-                        self.button.y._down()
-                    elif event.button == self.button.l.index:
-                        self.button.l._down()
-                    elif event.button == self.button.r.index:
-                        self.button.r._down()
-                    elif event.button == self.button.zl.index:
-                        self.button.zl._down()
-                    elif event.button == self.button.zr.index:
-                        self.button.zr._down()
-                    elif event.button == self.joystick.left.index:
-                        self.joystick.left._down()
-                    elif event.button == self.joystick.right.index:
-                        self.joystick.right._down()
+                    self.handle_joy_button_down(event)
                 elif event.type == JOYBUTTONUP:
-                    if event.button == self.button.left.index:
-                        self.button.left._up()
-                    elif event.button == self.button.right.index:
-                        self.button.right._up()
-                    elif event.button == self.button.up.index:
-                        self.button.up._up()
-                    elif event.button == self.button.down.index:
-                        self.button.down._up()
-                    elif event.button == self.button.a.index:
-                        self.button.a._up()
-                    elif event.button == self.button.b.index:
-                        self.button.b._up()
-                    elif event.button == self.button.x.index:
-                        self.button.x._up()
-                    elif event.button == self.button.y.index:
-                        self.button.y._up()
-                    elif event.button == self.button.l.index:
-                        self.button.l._up()
-                    elif event.button == self.button.r.index:
-                        self.button.r._up()
-                    elif event.button == self.button.zl.index:
-                        self.button.zl._up()
-                    elif event.button == self.button.zr.index:
-                        self.button.zr._up()
-                    elif event.button == self.joystick.left.index:
-                        self.joystick.left._up()
-                    elif event.button == self.joystick.right.index:
-                        self.joystick.right._up()
+                    self.handle_joy_button_up(event)
                 elif event.type == JOYHATMOTION:
-                    if event.value[0] == -1 and not self.button.left.pressed:
-                        self.button.left._down()
-                    if event.value[0] == 1 and not self.button.right.pressed:
-                        self.button.right._down()
-                    if event.value[1] == 1 and not self.button.up.pressed:
-                        self.button.up._down()
-                    if event.value[1] == -1 and not self.button.down.pressed:
-                        self.button.down._down()
-                    if event.value[0] == 0 and self.button.left.pressed:
-                        self.button.left._up()
-                    if event.value[0] == 0 and self.button.right.pressed:
-                        self.button.right._up()
-                    if event.value[1] == 0 and self.button.up.pressed:
-                        self.button.up._up()
-                    if event.value[1] == 0 and self.button.down.pressed:
-                        self.button.down._up()
+                    self.handle_joy_hat_motion(event)
                 elif event.type == JOYDEVICEREMOVED:
-                    self.on_joy_disconnect()
+                    self.handle_joy_disconnect()
                 elif event.type == JOYDEVICEADDED:
-                    self.on_joy_connect()
+                    self.handle_joy_connect()
             if (
                 not self.pygame_controller
                 and time.time() - self.last_joy_connection_check > 1
             ):
-                self.on_joy_connect()
+                self.handle_joy_connect()
                 continue
             time.sleep(0)
         # Quit Pygame
@@ -338,36 +346,23 @@ class Controller:
         controller.init()
         return controller
 
+    def remove_all_listeners(self):
+        for button in self.buttons.values():
+            button.remove_all_listeners()
+        for stick in self.sticks.values():
+            stick.remove_all_listeners()
+
 
 if __name__ == "__main__":
-    controller = Controller()
-    controller.joystick.left.on_move(
-        lambda joystick: print(
-            f"Joystick {joystick} moved to {joystick.x}, {joystick.y}"
+    from config import default_config
+
+    controller = Controller(default_config)
+    for button in controller.buttons.values():
+        button.on_click(lambda button: print(f"Button {button} clicked"))
+    for stick in controller.sticks.values():
+        stick.on_move(
+            lambda stick: print(f"Stick {stick} moved to {stick.x}, {stick.y}")
         )
-    )
-    controller.joystick.right.on_move(
-        lambda joystick: print(
-            f"Joystick {joystick} moved to {joystick.x}, {joystick.y}"
-        )
-    )
-    controller.button.left.on_down(
-        lambda button: print(f"Button {button} pressed down")
-    )
-    controller.button.left.on_up(lambda button: print(f"Button {button} released"))
-    controller.button.left.on_click(lambda button: print(f"Button {button} clicked"))
-    controller.button.left.on_long_press(
-        lambda button: print(f"Button {button} long pressed")
-    )
-    controller.button.left.on_long_press_start(
-        lambda button: print(f"Button {button} long press started")
-    )
-    controller.button.left.on_double_click(
-        lambda button: print(f"Button {button} double click")
-    )
-    controller.joystick.left.on_down(
-        lambda joystick: print(f"Joystick {joystick} pressed down")
-    )
     # controller.gestures.on_multi_click = lambda buttons: print(
     #     f"Buttons {buttons} clicked at the same time"
     # )  # Called when multiple buttons are pressed at the same time as soon as all buttons are released again
