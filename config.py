@@ -379,6 +379,10 @@ default_config = Config(
                     "down": ComputerKeyDownAction(key="ctrl"),
                     "up": ComputerKeyUpAction(key="ctrl"),
                 },
+                "shoulder_zr": {
+                    "down": ComputerKeyDownAction(key="enter"),
+                    "up": ComputerKeyUpAction(key="enter"),
+                },
             },
             stick_actions={
                 "stick_right": {
@@ -667,6 +671,28 @@ default_config = Config(
                     actions={
                         "down": ComputerKeyDownAction(key="0"),
                         "up": ComputerKeyUpAction(key="0"),
+                    },
+                ),
+                # ----------------------
+                MultiControllerButtonAction(
+                    buttons=["shoulder_l"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="backspace"),
+                        "up": ComputerKeyUpAction(key="backspace"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="space"),
+                        "up": ComputerKeyUpAction(key="space"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="enter"),
+                        "up": ComputerKeyUpAction(key="enter"),
                     },
                 ),
             ],
