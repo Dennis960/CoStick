@@ -304,16 +304,15 @@ class ControllerMapping:
 def simulate_iterations(
     mapping: ControllerMapping,
     sequence: str,
-    iterations=10,
     batch_mutations=10,
     random_mutation_probability=0.1,
     random_mutation_every_n_iterations: int | None = 5,
-    iteration_callback: Callable[[int, int], None] = None,
 ):
     """
-    Simulate a number of iterations of the optimization algorithm.
+    Simulate an infinite number of iterations of the optimization algorithm.
     """
-    for iteration in range(iterations):
+    iteration = 0
+    while True:
         best_mapping = mapping
         best_difficulty = mapping.get_difficulty_for_sequence(sequence)
         char_indices = list(range(len(chars)))
@@ -335,7 +334,5 @@ def simulate_iterations(
             if random.random() < random_mutation_probability:
                 mapping = mapping.mutate_random()
 
-        if iteration_callback:
-            iteration_callback(iteration, best_difficulty)
-
-    return best_difficulty
+        yield best_difficulty
+        iteration += 1

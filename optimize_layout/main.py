@@ -27,23 +27,18 @@ def update_plot(ax, line, iteration, difficulty):
 
 fig, ax, line = init_plot()
 
-
-def plot_callback(iteration: int, difficulty: int):
-    print(f"Iteration {iteration}: {difficulty}")
-    update_plot(ax, line, iteration, difficulty)
-
-
 data_subset = dataset[:10000]
-best_difficulty = simulate_iterations(
-    ControllerMapping.random(),
-    sequence=data_subset,
-    iterations=10,
-    batch_mutations=10,
-    random_mutation_probability=0.1,
-    random_mutation_every_n_iterations=5,
-    iteration_callback=plot_callback,
-)
-print(best_difficulty)
+for i, difficulty in enumerate(
+    simulate_iterations(
+        ControllerMapping.random(),
+        sequence=data_subset,
+        batch_mutations=10,
+        random_mutation_probability=0.1,
+        random_mutation_every_n_iterations=5,
+    )
+):
+    print(f"Iteration {i}: {difficulty}")
+    update_plot(ax, line, i, difficulty)
 
 plt.ioff()
 plt.show()
