@@ -12,7 +12,7 @@ def init_plot():
     return fig, ax, line
 
 
-def update_plot(ax, line, iteration, difficulty):
+def update_plot(ax: plt.Axes, line: plt.Line2D, iteration: int, difficulty: float):
     xdata = line.get_xdata()
     ydata = line.get_ydata()
     xdata = list(xdata) + [iteration]
