@@ -28,7 +28,7 @@ def update_plot(ax: plt.Axes, line: plt.Line2D, iteration: int, difficulty: floa
 fig, ax, line = init_plot()
 
 data_subset = dataset[:10000]
-for i, difficulty in enumerate(
+for i, (difficulty, best_mapping) in enumerate(
     simulate_iterations(
         ControllerMapping.random(),
         sequence=data_subset,
@@ -39,6 +39,7 @@ for i, difficulty in enumerate(
 ):
     print(f"Iteration {i}: {difficulty}")
     update_plot(ax, line, i, difficulty)
+    best_mapping.save(f"best_mapping.json")
 
 plt.ioff()
 plt.show()

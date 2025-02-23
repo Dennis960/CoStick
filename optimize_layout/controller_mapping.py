@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Literal, Self, Callable
+from typing import Literal, Self
 from load_dataset import ALLOWED_CHARS
 from itertools import chain, combinations
 import random
+import json
 
 ControllerButton = Literal[
     "face_up",
@@ -229,6 +230,21 @@ class ControllerMapping:
             total_difficulty += self.get_transition_difficulty(from_char, to_char)
         return total_difficulty
 
+    def to_json(self) -> str:
+        """Converts the controller mapping to a JSON string."""
+        map_json = json.dumps(
+            {
+                char: list(button_combination)
+                for char, button_combination in self.map.items()
+            }
+        )
+        return map_json
+
+    def save(self, filename: str):
+        """Saves the controller mapping to a file."""
+        with open(filename, "w") as f:
+            f.write(self.to_json())
+
     @classmethod
     def get_unused_button_combinations(
         self, map: dict[str, ButtonCombination]
@@ -334,5 +350,5 @@ def simulate_iterations(
             if random.random() < random_mutation_probability:
                 mapping = mapping.mutate_random()
 
-        yield best_difficulty
+        yield best_difficulty, best_mapping
         iteration += 1
