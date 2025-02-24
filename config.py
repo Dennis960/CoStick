@@ -972,6 +972,13 @@ default_config = Config(
                         "up": ComputerKeyUpAction(key="enter"),
                     },
                 ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="tab"),
+                        "up": ComputerKeyUpAction(key="tab"),
+                    },
+                ),
             ],
         ),
     },
