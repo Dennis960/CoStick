@@ -4,7 +4,6 @@ from load_dataset import ALLOWED_CHARS
 from itertools import chain, combinations
 import random
 import json
-import multiprocessing
 from functools import lru_cache
 
 ControllerButton = Literal[
@@ -351,49 +350,37 @@ def get_difficulty_for_sequence(
 
 
 def simulate_iterations(
-    mapping: ControllerMapping,
-    sequence: str,
-    batch_mutations=10,
-    random_mutation_probability=0.1,
-    random_mutation_every_n_iterations: int | None = 5,
-    processes: int = 12,
+    map: dict[str, ButtonCombination],
+    char_counts: dict[str, int],
+    char_pairs: dict[tuple[str, str], int],
+    mutation_batch_size: int = 5,
 ):
     """
     Simulate an infinite number of iterations of the optimization algorithm.
     """
+    mapping = ControllerMapping(map)
     iteration = 0
     best_mapping = mapping
     best_difficulty = float("inf")
     char_indices = list(range(len(chars)))
-    # convert sequence to processes chunks
-    sequence_chunks = [
-        sequence[i : i + len(sequence) // processes]
-        for i in range(0, len(sequence), len(sequence) // processes)
-    ]
 
-    with multiprocessing.Pool(processes) as pool:
-        while True:
-            random.shuffle(char_indices)
-            for i in range(0, len(char_indices), batch_mutations):
-                batch_indices = char_indices[i : i + batch_mutations]
-                mutated_mapping = mapping.mutate_at_indices(batch_indices)
-                mutated_difficulties = pool.starmap(
-                    get_difficulty_for_sequence,
-                    [(mutated_mapping.map, chunk) for chunk in sequence_chunks],
+    while True:
+        random.shuffle(char_indices)
+        for i in range(0, len(char_indices), mutation_batch_size):
+            batch_indices = char_indices[i : i + mutation_batch_size]
+            mutated_mapping = mapping.mutate_at_indices(batch_indices)
+            mutated_difficulty = 0
+            for char, count in char_counts.items():
+                mutated_difficulty += mutated_mapping.get_char_difficulty(char) * count
+            for (from_char, to_char), count in char_pairs.items():
+                mutated_difficulty += (
+                    mutated_mapping.get_transition_difficulty(from_char, to_char)
+                    * count
                 )
-                mutated_difficulty = sum(mutated_difficulties)
-                if mutated_difficulty < best_difficulty:
-                    best_mapping = mutated_mapping
-                    best_difficulty = mutated_difficulty
-            mapping = best_mapping
+            if mutated_difficulty < best_difficulty:
+                best_mapping = mutated_mapping
+                best_difficulty = mutated_difficulty
+        mapping = best_mapping
 
-            # Perform a random mutation every n iterations
-            if (
-                random_mutation_every_n_iterations is not None
-                and iteration % random_mutation_every_n_iterations == 0
-            ):
-                if random.random() < random_mutation_probability:
-                    mapping = mapping.mutate_random()
-
-            yield best_difficulty, best_mapping.map
-            iteration += 1
+        yield best_difficulty, best_mapping.map
+        iteration += 1

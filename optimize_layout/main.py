@@ -50,11 +50,23 @@ def on_press(key: pynput.keyboard.KeyCode):
 fig, ax, line = init_plot()
 
 data_subset = clean_dataset(dataset)
+
+# Count chars
+char_counts: dict[str, int] = {}
+for char in data_subset:
+    char_counts[char] = char_counts.get(char, 0) + 1
+# Count how often each pair of characters occurs in the sequence
+char_pairs: dict[tuple[str, str], int] = {}
+for i in range(len(data_subset) - 1):
+    char_pair = (data_subset[i], data_subset[i + 1])
+    char_pairs[char_pair] = char_pairs.get(char_pair, 0) + 1
+
+
 best_map = ControllerMapping.random().map
 best_difficulty = float("inf")
 best_map_index = 0
-mutate_random_after_no_change_amount = 5
-number_of_mutations = 10
+mutate_random_after_no_change_amount = 20
+number_of_mutations = 5
 
 mapping = ControllerMapping(best_map)
 
@@ -90,11 +102,9 @@ with pynput.keyboard.Listener(on_press=on_press) as listener:
         fps_counter.start()
         for i, (difficulty, map) in enumerate(
             simulate_iterations(
-                mapping,
-                sequence=data_subset,
-                random_mutation_probability=0.1,
-                random_mutation_every_n_iterations=5,
-                processes=24,
+                mapping.map,
+                char_counts,
+                char_pairs,
             )
         ):
             fps_counter.end()
@@ -103,16 +113,11 @@ with pynput.keyboard.Listener(on_press=on_press) as listener:
                 local_best_difficulty = difficulty
                 best_map = map
                 best_map_index = total_iterations
-                print(f"New best difficulty: {difficulty}")
             update_plot(ax, line, total_iterations, difficulty)
             if not running:
                 print("Stopping")
                 break
             if total_iterations - best_map_index > mutate_random_after_no_change_amount:
-                print(
-                    f"Mutating random after {mutate_random_after_no_change_amount} iterations without improvement"
-                )
-                mutate_random_after_no_change_amount += 5
                 mapping = mapping.mutate_random(number_of_mutations)
                 break
             fps_counter.start()
