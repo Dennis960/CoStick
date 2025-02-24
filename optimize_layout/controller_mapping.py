@@ -28,7 +28,7 @@ controller_buttons: list[ControllerButton] = [
     "shoulder_zr",
 ]
 
-chars = list(set(list(ALLOWED_CHARS.lower())) - {"\t", "\n", "\b"})
+chars = list(set(list(ALLOWED_CHARS.lower())) - {"\t", "\n", "\b", " "})
 
 
 ButtonCombination = frozenset[ControllerButton]
@@ -78,6 +78,14 @@ invalid_combinations: set[ButtonCombination] = {
 }
 """Button combinations that are not allowed because they are impossible (or at least very hard) to press at the same time."""
 
+invalid_single_buttons: list[ControllerButton] = {
+    "shoulder_l",
+    "shoulder_r",
+    "shoulder_zl",
+    "shoulder_zr",
+}
+"""Buttons that should not be pressed on their own."""
+
 
 def powerset(iterable: list):
     return chain.from_iterable(
@@ -92,6 +100,9 @@ all_allowed_button_combinations: list[ButtonCombination] = [
     and not any(
         invalid_combination.issubset(button_combination)
         for invalid_combination in invalid_combinations
+    )
+    and not (
+        len(button_combination) == 1 and button_combination[0] in invalid_single_buttons
     )
 ]
 

@@ -422,94 +422,52 @@ default_config = Config(
             },
             multi_button_actions=[
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "face_right"],
+                    buttons=["face_left", "shoulder_r"],
                     actions={
-                        "down": ComputerKeyDownAction(key="a"),
-                        "up": ComputerKeyUpAction(key="a"),
+                        "down": ComputerKeyDownAction(key=","),
+                        "up": ComputerKeyUpAction(key=","),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "face_down"],
+                    buttons=["shoulder_l", "shoulder_r"],
                     actions={
-                        "down": ComputerKeyDownAction(key="b"),
-                        "up": ComputerKeyUpAction(key="b"),
+                        "down": ComputerKeyDownAction(key="-"),
+                        "up": ComputerKeyUpAction(key="-"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "face_left"],
+                    buttons=["face_right", "shoulder_l", "shoulder_zl"],
                     actions={
-                        "down": ComputerKeyDownAction(key="c"),
-                        "up": ComputerKeyUpAction(key="c"),
+                        "down": ComputerKeyDownAction(key="5"),
+                        "up": ComputerKeyUpAction(key="5"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "face_up"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="d"),
-                        "up": ComputerKeyUpAction(key="d"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_zl", "face_right"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="e"),
-                        "up": ComputerKeyUpAction(key="e"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_zl", "face_down"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="f"),
-                        "up": ComputerKeyUpAction(key="f"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_zl", "face_left"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="g"),
-                        "up": ComputerKeyUpAction(key="g"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_zl", "face_up"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="h"),
-                        "up": ComputerKeyUpAction(key="h"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_r", "face_right"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="i"),
-                        "up": ComputerKeyUpAction(key="i"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_r", "face_down"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="j"),
-                        "up": ComputerKeyUpAction(key="j"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_r", "face_left"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="k"),
-                        "up": ComputerKeyUpAction(key="k"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_r", "face_up"],
+                    buttons=["shoulder_zr", "face_left"],
                     actions={
                         "down": ComputerKeyDownAction(key="l"),
                         "up": ComputerKeyUpAction(key="l"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_zr", "face_right"],
+                    buttons=["shoulder_zr", "face_up", "shoulder_l", "shoulder_zl"],
                     actions={
-                        "down": ComputerKeyDownAction(key="m"),
-                        "up": ComputerKeyUpAction(key="m"),
+                        "down": ComputerKeyDownAction(key="1"),
+                        "up": ComputerKeyUpAction(key="1"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="&"),
+                        "up": ComputerKeyUpAction(key="&"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_down", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="ü"),
+                        "up": ComputerKeyUpAction(key="ü"),
                     },
                 ),
                 MultiControllerButtonAction(
@@ -520,157 +478,476 @@ default_config = Config(
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_zr", "face_left"],
+                    buttons=["face_down", "shoulder_r"],
                     actions={
-                        "down": ComputerKeyDownAction(key="o"),
-                        "up": ComputerKeyUpAction(key="o"),
+                        "down": ComputerKeyDownAction(key="d"),
+                        "up": ComputerKeyUpAction(key="d"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_zr", "face_up"],
+                    buttons=["face_right", "shoulder_zr", "shoulder_zl"],
                     actions={
-                        "down": ComputerKeyDownAction(key="p"),
-                        "up": ComputerKeyUpAction(key="p"),
+                        "down": ComputerKeyDownAction(key="="),
+                        "up": ComputerKeyUpAction(key="="),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_r", "face_right"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="q"),
-                        "up": ComputerKeyUpAction(key="q"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_r", "face_down"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="r"),
-                        "up": ComputerKeyUpAction(key="r"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_r", "face_left"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="s"),
-                        "up": ComputerKeyUpAction(key="s"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_r", "face_up"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="t"),
-                        "up": ComputerKeyUpAction(key="t"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_zl", "shoulder_r", "face_right"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="u"),
-                        "up": ComputerKeyUpAction(key="u"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_zl", "shoulder_r", "face_down"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="v"),
-                        "up": ComputerKeyUpAction(key="v"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_zl", "shoulder_r", "face_left"],
-                    actions={
-                        "down": ComputerKeyDownAction(key="w"),
-                        "up": ComputerKeyUpAction(key="w"),
-                    },
-                ),
-                MultiControllerButtonAction(
-                    buttons=["shoulder_zl", "shoulder_r", "face_up"],
+                    buttons=["shoulder_zl", "shoulder_r"],
                     actions={
                         "down": ComputerKeyDownAction(key="x"),
                         "up": ComputerKeyUpAction(key="x"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_zr", "face_right"],
+                    buttons=["face_up", "shoulder_l", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="#"),
+                        "up": ComputerKeyUpAction(key="#"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_left", "shoulder_r"],
                     actions={
                         "down": ComputerKeyDownAction(key="y"),
                         "up": ComputerKeyUpAction(key="y"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_zr", "face_down"],
+                    buttons=["shoulder_l", "shoulder_zr", "shoulder_zl", "shoulder_r"],
                     actions={
-                        "down": ComputerKeyDownAction(key="z"),
-                        "up": ComputerKeyUpAction(key="z"),
+                        "down": ComputerKeyDownAction(key="~"),
+                        "up": ComputerKeyUpAction(key="~"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_zr", "face_left"],
+                    buttons=[
+                        "face_down",
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "shoulder_zr",
+                        "shoulder_l",
+                    ],
                     actions={
-                        "down": ComputerKeyDownAction(key="1"),
-                        "up": ComputerKeyUpAction(key="1"),
+                        "down": ComputerKeyDownAction(key="ä"),
+                        "up": ComputerKeyUpAction(key="ä"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_zr", "face_up"],
+                    buttons=["shoulder_zr", "face_up", "shoulder_l"],
                     actions={
-                        "down": ComputerKeyDownAction(key="2"),
-                        "up": ComputerKeyUpAction(key="2"),
+                        "down": ComputerKeyDownAction(key=";"),
+                        "up": ComputerKeyUpAction(key=";"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_zr", "shoulder_zl", "face_right"],
+                    buttons=["face_right", "shoulder_zr", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="|"),
+                        "up": ComputerKeyUpAction(key="|"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_left", "shoulder_l"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="b"),
+                        "up": ComputerKeyUpAction(key="b"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_l", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="{"),
+                        "up": ComputerKeyUpAction(key="{"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_zl", "shoulder_r"],
                     actions={
                         "down": ComputerKeyDownAction(key="3"),
                         "up": ComputerKeyUpAction(key="3"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_zr", "shoulder_zl", "face_down"],
+                    buttons=["shoulder_zr", "face_left", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="w"),
+                        "up": ComputerKeyUpAction(key="w"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="f"),
+                        "up": ComputerKeyUpAction(key="f"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_up", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="^"),
+                        "up": ComputerKeyUpAction(key="^"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_left", "shoulder_l", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="€"),
+                        "up": ComputerKeyUpAction(key="€"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_up"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="s"),
+                        "up": ComputerKeyUpAction(key="s"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_left", "shoulder_l", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="k"),
+                        "up": ComputerKeyUpAction(key="k"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="."),
+                        "up": ComputerKeyUpAction(key="."),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_up"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="e"),
+                        "up": ComputerKeyUpAction(key="e"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_l", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="*"),
+                        "up": ComputerKeyUpAction(key="*"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_down", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="/"),
+                        "up": ComputerKeyUpAction(key="/"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_left", "shoulder_l", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="h"),
+                        "up": ComputerKeyUpAction(key="h"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_left", "shoulder_l", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="`"),
+                        "up": ComputerKeyUpAction(key="`"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_up", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="q"),
+                        "up": ComputerKeyUpAction(key="q"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=[
+                        "face_left",
+                        "shoulder_r",
+                        "shoulder_zl",
+                        "shoulder_zr",
+                        "shoulder_l",
+                    ],
+                    actions={
+                        "down": ComputerKeyDownAction(key="ö"),
+                        "up": ComputerKeyUpAction(key="ö"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_zr"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="_"),
+                        "up": ComputerKeyUpAction(key="_"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_up", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key='"'),
+                        "up": ComputerKeyUpAction(key='"'),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_left", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key=":"),
+                        "up": ComputerKeyUpAction(key=":"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="m"),
+                        "up": ComputerKeyUpAction(key="m"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_up", "shoulder_l"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="r"),
+                        "up": ComputerKeyUpAction(key="r"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_up", "shoulder_l", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="0"),
+                        "up": ComputerKeyUpAction(key="0"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="t"),
+                        "up": ComputerKeyUpAction(key="t"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_down", "shoulder_l", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="%"),
+                        "up": ComputerKeyUpAction(key="%"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_up", "shoulder_l", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="@"),
+                        "up": ComputerKeyUpAction(key="@"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_left", "shoulder_l"],
+                    actions={
+                        "down": ComputerKeyDownAction(key=">"),
+                        "up": ComputerKeyUpAction(key=">"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_up", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="'"),
+                        "up": ComputerKeyUpAction(key="'"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=[
+                        "shoulder_r",
+                        "face_up",
+                        "shoulder_zl",
+                        "shoulder_zr",
+                        "shoulder_l",
+                    ],
+                    actions={
+                        "down": ComputerKeyDownAction(key="ß"),
+                        "up": ComputerKeyUpAction(key="ß"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_l"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="v"),
+                        "up": ComputerKeyUpAction(key="v"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_up", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="p"),
+                        "up": ComputerKeyUpAction(key="p"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_l", "face_down", "shoulder_zl", "shoulder_r"],
                     actions={
                         "down": ComputerKeyDownAction(key="4"),
                         "up": ComputerKeyUpAction(key="4"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_zr", "shoulder_zl", "face_left"],
+                    buttons=["shoulder_l", "face_up", "shoulder_zl", "shoulder_r"],
                     actions={
-                        "down": ComputerKeyDownAction(key="5"),
-                        "up": ComputerKeyUpAction(key="5"),
+                        "down": ComputerKeyDownAction(key="$"),
+                        "up": ComputerKeyUpAction(key="$"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_zr", "shoulder_zl", "face_up"],
+                    buttons=["shoulder_zr", "face_down", "shoulder_l"],
                     actions={
                         "down": ComputerKeyDownAction(key="6"),
                         "up": ComputerKeyUpAction(key="6"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_r", "shoulder_zl", "face_right"],
+                    buttons=["face_right", "shoulder_zr", "shoulder_l", "shoulder_zl"],
                     actions={
                         "down": ComputerKeyDownAction(key="7"),
                         "up": ComputerKeyUpAction(key="7"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_r", "shoulder_zl", "face_down"],
+                    buttons=["face_down", "shoulder_l", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="]"),
+                        "up": ComputerKeyUpAction(key="]"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_l", "face_left", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="!"),
+                        "up": ComputerKeyUpAction(key="!"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_zr", "shoulder_l"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="}"),
+                        "up": ComputerKeyUpAction(key="}"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_left"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="i"),
+                        "up": ComputerKeyUpAction(key="i"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_down", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="z"),
+                        "up": ComputerKeyUpAction(key="z"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_l", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="<"),
+                        "up": ComputerKeyUpAction(key="<"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "shoulder_l"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="a"),
+                        "up": ComputerKeyUpAction(key="a"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_down", "shoulder_l", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="["),
+                        "up": ComputerKeyUpAction(key="["),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_down", "shoulder_l", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="\\"),
+                        "up": ComputerKeyUpAction(key="\\"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_l", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="("),
+                        "up": ComputerKeyUpAction(key="("),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_up", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key=")"),
+                        "up": ComputerKeyUpAction(key=")"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "face_left", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="+"),
+                        "up": ComputerKeyUpAction(key="+"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "shoulder_zl", "shoulder_r"],
                     actions={
                         "down": ComputerKeyDownAction(key="8"),
                         "up": ComputerKeyUpAction(key="8"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_r", "shoulder_zl", "face_left"],
+                    buttons=["face_down", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="2"),
+                        "up": ComputerKeyUpAction(key="2"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_zr", "shoulder_l", "shoulder_r"],
                     actions={
                         "down": ComputerKeyDownAction(key="9"),
                         "up": ComputerKeyUpAction(key="9"),
                     },
                 ),
                 MultiControllerButtonAction(
-                    buttons=["shoulder_l", "shoulder_r", "shoulder_zl", "face_up"],
+                    buttons=["face_down"],
                     actions={
-                        "down": ComputerKeyDownAction(key="0"),
-                        "up": ComputerKeyUpAction(key="0"),
+                        "down": ComputerKeyDownAction(key="o"),
+                        "up": ComputerKeyUpAction(key="o"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_left", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="u"),
+                        "up": ComputerKeyUpAction(key="u"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_right", "shoulder_zr", "shoulder_zl", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="j"),
+                        "up": ComputerKeyUpAction(key="j"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_down", "shoulder_zl"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="g"),
+                        "up": ComputerKeyUpAction(key="g"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["face_down", "shoulder_l"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="c"),
+                        "up": ComputerKeyUpAction(key="c"),
+                    },
+                ),
+                MultiControllerButtonAction(
+                    buttons=["shoulder_zr", "shoulder_l", "shoulder_r"],
+                    actions={
+                        "down": ComputerKeyDownAction(key="?"),
+                        "up": ComputerKeyUpAction(key="?"),
                     },
                 ),
                 # ----------------------
