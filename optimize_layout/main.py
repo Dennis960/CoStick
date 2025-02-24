@@ -1,6 +1,8 @@
 from load_dataset import dataset
 from controller_mapping import ControllerMapping, simulate_iterations
 import matplotlib.pyplot as plt
+import pynput
+import time
 
 
 def init_plot():
@@ -25,21 +27,100 @@ def update_plot(ax: plt.Axes, line: plt.Line2D, iteration: int, difficulty: floa
     plt.pause(0.01)
 
 
+def clean_dataset(dataset: str):
+    # remove spaces
+    dataset = dataset.replace(" ", "")
+    # remove newlines
+    dataset = dataset.replace("\n", "")
+    # remove tabs
+    dataset = dataset.replace("\t", "")
+    return dataset
+
+
+running = True
+
+
+def on_press(key: pynput.keyboard.KeyCode):
+    global running
+    if key.char == "q":
+        running = False
+        return False
+
+
 fig, ax, line = init_plot()
 
-data_subset = dataset[:10000]
-for i, (difficulty, best_mapping) in enumerate(
-    simulate_iterations(
-        ControllerMapping.random(),
-        sequence=data_subset,
-        batch_mutations=10,
-        random_mutation_probability=0.1,
-        random_mutation_every_n_iterations=5,
-    )
-):
-    print(f"Iteration {i}: {difficulty}")
-    update_plot(ax, line, i, difficulty)
-    best_mapping.save(f"best_mapping.json")
+data_subset = clean_dataset(dataset)
+best_map = ControllerMapping.random().map
+best_difficulty = float("inf")
+best_map_index = 0
+mutate_random_after_no_change_amount = 5
+number_of_mutations = 10
+
+mapping = ControllerMapping(best_map)
+
+
+class FPSCounter:
+    def __init__(self):
+        self.iteration_times = []
+
+    def start(self):
+        self.start_time = time.time()
+
+    def end(self):
+        end_time = time.time()
+        self.iteration_times.append(end_time - self.start_time)
+        if len(self.iteration_times) > 10:
+            self.iteration_times.pop(0)
+        if len(self.iteration_times) == 10:
+            avg_fps = 1 / (sum(self.iteration_times) / 10)
+            self.print_fps(avg_fps)
+            return avg_fps
+        return None
+
+    def print_fps(self, avg_fps):
+        print(f"Average FPS over last 10 iterations: {avg_fps:.2f}")
+
+
+fps_counter = FPSCounter()
+
+with pynput.keyboard.Listener(on_press=on_press) as listener:
+    total_iterations = 0
+    while running:
+        local_best_difficulty = float("inf")
+        fps_counter.start()
+        for i, (difficulty, map) in enumerate(
+            simulate_iterations(
+                mapping,
+                sequence=data_subset,
+                random_mutation_probability=0.1,
+                random_mutation_every_n_iterations=5,
+                processes=24,
+            )
+        ):
+            fps_counter.end()
+            total_iterations += 1
+            if difficulty < local_best_difficulty:
+                local_best_difficulty = difficulty
+                best_map = map
+                best_map_index = total_iterations
+                print(f"New best difficulty: {difficulty}")
+            update_plot(ax, line, total_iterations, difficulty)
+            if not running:
+                print("Stopping")
+                break
+            if total_iterations - best_map_index > mutate_random_after_no_change_amount:
+                print(
+                    f"Mutating random after {mutate_random_after_no_change_amount} iterations without improvement"
+                )
+                mutate_random_after_no_change_amount += 5
+                mapping = mapping.mutate_random(number_of_mutations)
+                break
+            fps_counter.start()
+        if local_best_difficulty < best_difficulty:
+            best_difficulty = local_best_difficulty
+            ControllerMapping(best_map).save(
+                f"mappings/mapping({best_difficulty}).json"
+            )
 
 plt.ioff()
 plt.show()

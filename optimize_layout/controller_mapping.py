@@ -4,6 +4,8 @@ from load_dataset import ALLOWED_CHARS
 from itertools import chain, combinations
 import random
 import json
+import multiprocessing
+from functools import lru_cache
 
 ControllerButton = Literal[
     "face_up",
@@ -27,7 +29,7 @@ controller_buttons: list[ControllerButton] = [
     "shoulder_zr",
 ]
 
-chars = list(set(list(ALLOWED_CHARS.lower())))
+chars = list(set(list(ALLOWED_CHARS.lower())) - {"\t", "\n", "\b"})
 
 
 ButtonCombination = frozenset[ControllerButton]
@@ -157,6 +159,53 @@ difficulty_per_removed_button = 1
 """Difficulty score to add for each button removed during a combination change."""
 
 
+@lru_cache(maxsize=None)
+def get_button_combination_difficulty(button_combination: ButtonCombination) -> int:
+    """Computes the difficulty of a given button combination."""
+    total_difficulty = 0
+    # Add one default difficulty for each button in the combination
+    total_difficulty += len(button_combination) * default_button_combination_difficulty
+    # Add difficulty for each combination of buttons that is in button_combination_difficulties
+    for button_combination_difficulty in button_combination_difficulties:
+        if button_combination_difficulty.buttons.issubset(button_combination):
+            total_difficulty += button_combination_difficulty.difficulty
+    return total_difficulty
+
+
+@lru_cache(maxsize=None)
+def get_button_combination_transition_difficulty(
+    from_button_combination: ButtonCombination,
+    to_button_combination: ButtonCombination,
+):
+    total_difficulty = 0
+    # Add difficulty for each button that is added or removed
+    added_buttons = to_button_combination - from_button_combination
+    removed_buttons = from_button_combination - to_button_combination
+    total_difficulty += len(added_buttons) * difficulty_per_added_button
+    total_difficulty += len(removed_buttons) * difficulty_per_removed_button
+    # Add difficulty for each combination of buttons that is in transition_difficulites
+    for transition_difficulty in transition_difficulites:
+        matches_from = True
+        matches_to = True
+        for button_state in transition_difficulty.from_combination:
+            if button_state.pressed:
+                if button_state.button not in from_button_combination:
+                    matches_from = False
+            else:
+                if button_state.button in from_button_combination:
+                    matches_from = False
+        for button_state in transition_difficulty.to_combination:
+            if button_state.pressed:
+                if button_state.button not in to_button_combination:
+                    matches_to = False
+            else:
+                if button_state.button in to_button_combination:
+                    matches_to = False
+        if matches_from and matches_to:
+            total_difficulty += transition_difficulty.difficulty
+    return total_difficulty
+
+
 class ControllerMapping:
     """Represents the full mapping of characters to button combinations."""
 
@@ -173,52 +222,18 @@ class ControllerMapping:
 
     def get_char_difficulty(self, char: str) -> int:
         """Computes the difficulty of typing a given character using the current assignment."""
-        total_difficulty = 0
-        char_button_combination = self.map[char]
-        # Add one default difficulty for each button in the combination
-        total_difficulty += (
-            len(char_button_combination) * default_button_combination_difficulty
-        )
-        # Add difficulty for each combination of buttons that is in button_combination_difficulties
-        for button_combination_difficulty in button_combination_difficulties:
-            if button_combination_difficulty.buttons.issubset(char_button_combination):
-                total_difficulty += button_combination_difficulty.difficulty
-        return total_difficulty
+        return get_button_combination_difficulty(self.map[char])
 
     def get_transition_difficulty(self, from_char: str, to_char: str) -> int:
         """Computes the difficulty of transitioning from one character to another."""
         if from_char == to_char:
             # No transition difficulty if the characters are the same
             return 0
-        total_difficulty = 0
         from_button_combination = self.map[from_char]
         to_button_combination = self.map[to_char]
-        # Add difficulty for each button that is added or removed
-        added_buttons = to_button_combination - from_button_combination
-        removed_buttons = from_button_combination - to_button_combination
-        total_difficulty += len(added_buttons) * difficulty_per_added_button
-        total_difficulty += len(removed_buttons) * difficulty_per_removed_button
-        # Add difficulty for each combination of buttons that is in transition_difficulites
-        for transition_difficulty in transition_difficulites:
-            matches_from = True
-            matches_to = True
-            for button_state in transition_difficulty.from_combination:
-                if button_state.pressed:
-                    if button_state.button not in from_button_combination:
-                        matches_from = False
-                else:
-                    if button_state.button in from_button_combination:
-                        matches_from = False
-            for button_state in transition_difficulty.to_combination:
-                if button_state.pressed:
-                    if button_state.button not in to_button_combination:
-                        matches_to = False
-                else:
-                    if button_state.button in to_button_combination:
-                        matches_to = False
-            if matches_from and matches_to:
-                total_difficulty += transition_difficulty.difficulty
-        return total_difficulty
+        return get_button_combination_transition_difficulty(
+            from_button_combination, to_button_combination
+        )
 
     def get_difficulty_for_sequence(self, sequence: str) -> int:
         """Computes the total difficulty of typing a given sequence."""
@@ -239,6 +254,17 @@ class ControllerMapping:
             }
         )
         return map_json
+
+    @classmethod
+    def from_json(cls, json_string: str) -> Self:
+        """Creates a controller mapping from a JSON string."""
+        map: dict[str, ButtonCombination] = json.loads(json_string)
+        return ControllerMapping(
+            {
+                char: frozenset(button_combination)
+                for char, button_combination in map.items()
+            }
+        )
 
     def save(self, filename: str):
         """Saves the controller mapping to a file."""
@@ -317,38 +343,57 @@ class ControllerMapping:
         return ControllerMapping(mutated_map)
 
 
+def get_difficulty_for_sequence(
+    map: dict[str, ButtonCombination], sequence: str
+) -> int:
+    mapping = ControllerMapping(map)
+    return mapping.get_difficulty_for_sequence(sequence)
+
+
 def simulate_iterations(
     mapping: ControllerMapping,
     sequence: str,
     batch_mutations=10,
     random_mutation_probability=0.1,
     random_mutation_every_n_iterations: int | None = 5,
+    processes: int = 12,
 ):
     """
     Simulate an infinite number of iterations of the optimization algorithm.
     """
     iteration = 0
-    while True:
-        best_mapping = mapping
-        best_difficulty = mapping.get_difficulty_for_sequence(sequence)
-        char_indices = list(range(len(chars)))
-        random.shuffle(char_indices)
-        for i in range(0, len(char_indices), batch_mutations):
-            batch_indices = char_indices[i : i + batch_mutations]
-            mutated_mapping = mapping.mutate_at_indices(batch_indices)
-            mutated_difficulty = mutated_mapping.get_difficulty_for_sequence(sequence)
-            if mutated_difficulty < best_difficulty:
-                best_mapping = mutated_mapping
-                best_difficulty = mutated_difficulty
-        mapping = best_mapping
+    best_mapping = mapping
+    best_difficulty = float("inf")
+    char_indices = list(range(len(chars)))
+    # convert sequence to processes chunks
+    sequence_chunks = [
+        sequence[i : i + len(sequence) // processes]
+        for i in range(0, len(sequence), len(sequence) // processes)
+    ]
 
-        # Perform a random mutation every n iterations
-        if (
-            random_mutation_every_n_iterations is not None
-            and iteration % random_mutation_every_n_iterations == 0
-        ):
-            if random.random() < random_mutation_probability:
-                mapping = mapping.mutate_random()
+    with multiprocessing.Pool(processes) as pool:
+        while True:
+            random.shuffle(char_indices)
+            for i in range(0, len(char_indices), batch_mutations):
+                batch_indices = char_indices[i : i + batch_mutations]
+                mutated_mapping = mapping.mutate_at_indices(batch_indices)
+                mutated_difficulties = pool.starmap(
+                    get_difficulty_for_sequence,
+                    [(mutated_mapping.map, chunk) for chunk in sequence_chunks],
+                )
+                mutated_difficulty = sum(mutated_difficulties)
+                if mutated_difficulty < best_difficulty:
+                    best_mapping = mutated_mapping
+                    best_difficulty = mutated_difficulty
+            mapping = best_mapping
 
-        yield best_difficulty, best_mapping
-        iteration += 1
+            # Perform a random mutation every n iterations
+            if (
+                random_mutation_every_n_iterations is not None
+                and iteration % random_mutation_every_n_iterations == 0
+            ):
+                if random.random() < random_mutation_probability:
+                    mapping = mapping.mutate_random()
+
+            yield best_difficulty, best_mapping.map
+            iteration += 1

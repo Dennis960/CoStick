@@ -6,29 +6,46 @@ path_to_script = os.path.dirname(os.path.abspath(__file__))
 
 
 DATASET_PATH = os.path.join(path_to_script, "dataset.txt")
-ALLOWED_CHARS = "1234567890ß!\"$%&/()=?'+#-.,*'_:;<>|{[]}\\~@€^`qwertzuiopüasdfghjklöäyxcvbnmQWERTZUIOPÜASDFGHJKLÖÄYXCVBNM \n"
+ALLOWED_CHARS = "1234567890ß!\"$%&/()=?'+#-.,*'_:;<>|{[]}\\~@€^`qwertzuiopüasdfghjklöäyxcvbnmQWERTZUIOPÜASDFGHJKLÖÄYXCVBNM \n\t"
+IGNORED_CHARS = "€~^\t"
+NEEDED_CHARS = set(set(ALLOWED_CHARS.lower()) - set(IGNORED_CHARS))
 
 
-def save_dataset_to_file(filename: str, num_samples):
+def save_dataset_to_file(filename: str):
     ds = load_dataset("codeparrot/github-code", streaming=True, split="train")
     allowed_chars_regex = re.compile(f"[^{re.escape(ALLOWED_CHARS)}]")
+    found_chars = set()
+    sample_count = 0
 
     with open(filename, "w", encoding="utf-8") as f:
-        count = 0
         for sample in iter(ds):
             code = sample["code"]
             if allowed_chars_regex.search(code):
                 continue
             f.write(code)
-            count += 1
-            if count >= num_samples:
+            new_char = set(code) - found_chars
+            if new_char:
+                still_missing_chars = NEEDED_CHARS - found_chars
+                print(f"Missing: {still_missing_chars}")
+                found_chars |= new_char
+            sample_count += 1
+            if found_chars >= NEEDED_CHARS:
+                break
+        # get sample_count samples to double the dataset size
+        for sample in iter(ds):
+            code = sample["code"]
+            if allowed_chars_regex.search(code):
+                continue
+            f.write(code)
+            sample_count -= 1
+            if sample_count == 0:
                 break
 
-    print(f"Saved {count} code samples to {filename}")
+    print(f"Saved {sample_count} code samples to {filename}")
 
 
 if not os.path.exists(DATASET_PATH):
-    save_dataset_to_file(DATASET_PATH, 10000)
+    save_dataset_to_file(DATASET_PATH)
 with open(DATASET_PATH, "r", encoding="utf-8") as f:
     dataset = f.read().lower()
 
