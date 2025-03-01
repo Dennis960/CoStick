@@ -64,10 +64,13 @@ def run_optimization(new_best_callback: Callable[[int, int], None]):
                 print("Stopping")
                 break
         if local_best_difficulty < best_difficulty:
+            print("Saving new best mapping")
             best_difficulty = local_best_difficulty
             ControllerMapping(best_map).save(
                 f"mappings/mapping({best_difficulty}).json"
             )
+        else:
+            print("Not saving new best mapping")
 
 
 num_rows = 3
@@ -81,8 +84,8 @@ def init_plot():
     for ax in axs.flat:
         ax.set_xlabel("Iteration")
         ax.set_ylabel("Difficulty")
-    (line,) = axs[0, 0].plot([], [], "r-")
-    return fig, axs, line
+    lines = [ax.plot([], [], "r-")[0] for ax in axs.flat]
+    return fig, axs, lines
 
 
 def update_plot(ax: plt.Axes, line: plt.Line2D, iteration: int, difficulty: float):
@@ -98,8 +101,33 @@ def update_plot(ax: plt.Axes, line: plt.Line2D, iteration: int, difficulty: floa
     plt.pause(0.01)
 
 
-fig, axs, line = init_plot()
+def optimization_process(index, pipe):
+    def callback(iteration, difficulty):
+        pipe.send((iteration, difficulty))
 
-run_optimization(
-    lambda iteration, difficulty: update_plot(axs[0, 0], line, iteration, difficulty)
-)
+    run_optimization(callback)
+    pipe.close()
+
+
+fig, axs, lines = init_plot()
+
+pipes = []
+processes = []
+for i in range(num_rows * num_cols):
+    parent_pipe, child_pipe = multiprocessing.Pipe()
+    p = multiprocessing.Process(target=optimization_process, args=(i, child_pipe))
+    p.start()
+    pipes.append(parent_pipe)
+    processes.append(p)
+
+try:
+    while running:
+        for i, pipe in enumerate(pipes):
+            if pipe.poll():
+                iteration, difficulty = pipe.recv()
+                update_plot(axs.flat[i], lines[i], iteration, difficulty)
+finally:
+    for p in processes:
+        p.terminate()
+    for p in processes:
+        p.join()
