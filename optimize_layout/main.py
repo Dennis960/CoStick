@@ -2,30 +2,8 @@ from load_dataset import dataset
 from controller_mapping import ControllerMapping, simulate_iterations
 import matplotlib.pyplot as plt
 import pynput
-import time
-import random
-
-
-def init_plot():
-    plt.ion()
-    fig, ax = plt.subplots()
-    ax.set_xlabel("Iteration")
-    ax.set_ylabel("Difficulty")
-    (line,) = ax.plot([], [], "r-")
-    return fig, ax, line
-
-
-def update_plot(ax: plt.Axes, line: plt.Line2D, iteration: int, difficulty: float):
-    xdata = line.get_xdata()
-    ydata = line.get_ydata()
-    xdata = list(xdata) + [iteration]
-    ydata = list(ydata) + [difficulty]
-    line.set_xdata(xdata)
-    line.set_ydata(ydata)
-    ax.relim()
-    ax.autoscale_view()
-    plt.draw()
-    plt.pause(0.01)
+import multiprocessing
+from typing import Callable
 
 
 def clean_dataset(dataset: str):
@@ -48,7 +26,8 @@ def on_press(key: pynput.keyboard.KeyCode):
         return False
 
 
-fig, ax, line = init_plot()
+pynput.keyboard.Listener(on_press=on_press).start()
+
 
 data_subset = clean_dataset(dataset)
 
@@ -63,72 +42,64 @@ for i in range(len(data_subset) - 1):
     char_pairs[char_pair] = char_pairs.get(char_pair, 0) + 1
 
 
-best_map = ControllerMapping.random().map
-best_difficulty = float("inf")
-best_map_index = 0
-mutate_random_after_no_change_amount = 10000
-max_number_of_mutations = 5
+def run_optimization(new_best_callback: Callable[[int, int], None]):
+    best_map = ControllerMapping.random().map
+    best_difficulty = 999999999
 
-mapping = ControllerMapping(best_map)
-
-
-class FPSCounter:
-    def __init__(self):
-        self.iteration_times = []
-
-    def start(self):
-        self.start_time = time.time()
-
-    def end(self):
-        end_time = time.time()
-        self.iteration_times.append(end_time - self.start_time)
-        if len(self.iteration_times) > 10:
-            self.iteration_times.pop(0)
-        if len(self.iteration_times) == 10:
-            avg_fps = 1 / (sum(self.iteration_times) / 10)
-            self.print_fps(avg_fps)
-            return avg_fps
-        return None
-
-    def print_fps(self, avg_fps):
-        print(f"Average FPS over last 10 iterations: {avg_fps:.2f}")
-
-
-fps_counter = FPSCounter()
-
-with pynput.keyboard.Listener(on_press=on_press) as listener:
+    mapping = ControllerMapping(best_map)
     total_iterations = 0
     while running:
-        local_best_difficulty = float("inf")
-        fps_counter.start()
+        local_best_difficulty = 999999999
         for i, (difficulty, map) in enumerate(
-            simulate_iterations(
-                mapping.map,
-                char_counts,
-                char_pairs,
-            )
+            simulate_iterations(mapping.map, char_counts, char_pairs)
         ):
-            fps_counter.end()
             total_iterations += 1
-            if difficulty < local_best_difficulty:
-                local_best_difficulty = difficulty
-                best_map = map
-                best_map_index = total_iterations
-            update_plot(ax, line, total_iterations, difficulty)
+            if difficulty == local_best_difficulty:
+                mapping = ControllerMapping.random()
+                break
+            local_best_difficulty = difficulty
+            best_map = map
+            new_best_callback(total_iterations, difficulty)
             if not running:
                 print("Stopping")
                 break
-            if total_iterations - best_map_index > mutate_random_after_no_change_amount:
-                # random number of mutations
-                number_of_mutations = random.randint(1, max_number_of_mutations)
-                mapping = mapping.mutate_random(number_of_mutations)
-                break
-            fps_counter.start()
         if local_best_difficulty < best_difficulty:
             best_difficulty = local_best_difficulty
             ControllerMapping(best_map).save(
                 f"mappings/mapping({best_difficulty}).json"
             )
 
-plt.ioff()
-plt.show()
+
+num_rows = 3
+num_cols = 4
+
+
+def init_plot():
+    plt.ion()
+    fig, axs = plt.subplots(num_rows, num_cols)
+    fig.set_size_inches(12, 9)
+    for ax in axs.flat:
+        ax.set_xlabel("Iteration")
+        ax.set_ylabel("Difficulty")
+    (line,) = axs[0, 0].plot([], [], "r-")
+    return fig, axs, line
+
+
+def update_plot(ax: plt.Axes, line: plt.Line2D, iteration: int, difficulty: float):
+    xdata = line.get_xdata()
+    ydata = line.get_ydata()
+    xdata = list(xdata) + [iteration]
+    ydata = list(ydata) + [difficulty]
+    line.set_xdata(xdata)
+    line.set_ydata(ydata)
+    ax.relim()
+    ax.autoscale_view()
+    plt.draw()
+    plt.pause(0.01)
+
+
+fig, axs, line = init_plot()
+
+run_optimization(
+    lambda iteration, difficulty: update_plot(axs[0, 0], line, iteration, difficulty)
+)

@@ -187,6 +187,8 @@ def get_button_combination_transition_difficulty(
     from_button_combination: ButtonCombination,
     to_button_combination: ButtonCombination,
 ):
+    if from_button_combination == to_button_combination:
+        return 0
     total_difficulty = 0
     # Add difficulty for each button that is added or removed
     added_buttons = to_button_combination - from_button_combination
@@ -236,24 +238,9 @@ class ControllerMapping:
 
     def get_transition_difficulty(self, from_char: str, to_char: str) -> int:
         """Computes the difficulty of transitioning from one character to another."""
-        if from_char == to_char:
-            # No transition difficulty if the characters are the same
-            return 0
-        from_button_combination = self.map[from_char]
-        to_button_combination = self.map[to_char]
         return get_button_combination_transition_difficulty(
-            from_button_combination, to_button_combination
+            self.map[from_char], self.map[to_char]
         )
-
-    def get_difficulty_for_sequence(self, sequence: str) -> int:
-        """Computes the total difficulty of typing a given sequence."""
-        total_difficulty = 0
-        for i in range(len(sequence) - 1):
-            from_char = sequence[i]
-            to_char = sequence[i + 1]
-            total_difficulty += self.get_char_difficulty(to_char)
-            total_difficulty += self.get_transition_difficulty(from_char, to_char)
-        return total_difficulty
 
     def to_json(self) -> str:
         """Converts the controller mapping to a JSON string."""
@@ -330,18 +317,28 @@ class ControllerMapping:
 
     @classmethod
     def mutate_map_at_index(
-        cls, index: int, map: dict[str, ButtonCombination]
+        cls,
+        index: int,
+        map: dict[str, ButtonCombination],
+        to_button_combination_index: int | None = None,
     ) -> dict[str, ButtonCombination]:
         """Mutates a single character in the map at the given index."""
         random_char = chars[index]
-        random_button_combination = random.choice(all_allowed_button_combinations)
+        if to_button_combination_index is not None:
+            random_button_combination = random.choice(all_allowed_button_combinations)
+        else:
+            random_button_combination = all_allowed_button_combinations[
+                to_button_combination_index
+            ]
         return cls.mutate_map(random_char, random_button_combination, map)
 
-    def mutate_at_indices(self, indices: list[int]) -> Self:
-        """Mutates the current controller mapping at the given indices."""
-        mutated_map = self.map.copy()
-        for index in indices:
-            mutated_map = self.mutate_map_at_index(index, mutated_map)
+    def mutate_at_index(
+        self, index: int, to_button_combination_index: int | None = None
+    ) -> Self:
+        """Mutates the current controller mapping at the given index."""
+        mutated_map = self.mutate_map_at_index(
+            index, self.map.copy(), to_button_combination_index
+        )
         return ControllerMapping(mutated_map)
 
     def mutate_random(self, n: int = 1) -> Self:
@@ -353,18 +350,10 @@ class ControllerMapping:
         return ControllerMapping(mutated_map)
 
 
-def get_difficulty_for_sequence(
-    map: dict[str, ButtonCombination], sequence: str
-) -> int:
-    mapping = ControllerMapping(map)
-    return mapping.get_difficulty_for_sequence(sequence)
-
-
 def simulate_iterations(
     map: dict[str, ButtonCombination],
     char_counts: dict[str, int],
     char_pairs: dict[tuple[str, str], int],
-    mutation_batch_size: int = 5,
 ):
     """
     Simulate an infinite number of iterations of the optimization algorithm.
@@ -372,25 +361,31 @@ def simulate_iterations(
     mapping = ControllerMapping(map)
     iteration = 0
     best_mapping = mapping
-    best_difficulty = float("inf")
+    best_difficulty = 999999999
     char_indices = list(range(len(chars)))
+    button_combination_indices = list(range(len(all_allowed_button_combinations)))
 
     while True:
-        random.shuffle(char_indices)
-        for i in range(0, len(char_indices), mutation_batch_size):
-            batch_indices = char_indices[i : i + mutation_batch_size]
-            mutated_mapping = mapping.mutate_at_indices(batch_indices)
-            mutated_difficulty = 0
-            for char, count in char_counts.items():
-                mutated_difficulty += mutated_mapping.get_char_difficulty(char) * count
-            for (from_char, to_char), count in char_pairs.items():
-                mutated_difficulty += (
-                    mutated_mapping.get_transition_difficulty(from_char, to_char)
-                    * count
+        for char_index in char_indices:
+            for button_combination_index in button_combination_indices:
+                mutated_mapping = mapping.mutate_at_index(
+                    char_index, button_combination_index
                 )
-            if mutated_difficulty < best_difficulty:
-                best_mapping = mutated_mapping
-                best_difficulty = mutated_difficulty
+                mutated_difficulty = 0
+                for char, count in char_counts.items():
+                    mutated_difficulty += get_button_combination_difficulty(
+                        mutated_mapping.map[char]
+                    )
+                for (from_char, to_char), count in char_pairs.items():
+                    mutated_difficulty += (
+                        get_button_combination_transition_difficulty(
+                            mutated_mapping.map[from_char], mutated_mapping.map[to_char]
+                        )
+                        * count
+                    )
+                if mutated_difficulty < best_difficulty:
+                    best_mapping = mutated_mapping
+                    best_difficulty = mutated_difficulty
         mapping = best_mapping
 
         yield best_difficulty, best_mapping.map
