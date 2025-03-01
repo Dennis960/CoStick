@@ -235,9 +235,9 @@ default_config = Config(
             multi_click_duration=0.2,
         ),
         cursor_settings=CursorSettings(
-            cursor_speed_pixels_per_second=800,
-            cursor_boost_speed=5,
-            cursor_boost_acceleration_delay=0.2,
+            cursor_speed_pixels_per_second=500,
+            cursor_boost_speed=10,
+            cursor_boost_acceleration_delay=0.1,
             cursor_boost_acceleration_time=0.5,
             scroll_speed=0.5,
         ),
@@ -339,6 +339,9 @@ default_config = Config(
                 "shoulder_l": {
                     "click": SwitchModeAction(mode="typing"),
                 },
+                "shoulder_r": {
+                    "click": SwitchModeAction(mode="typing"),
+                },
                 "shoulder_zr": {
                     "down": ComputerKeyDownAction(key="ctrl"),
                     "up": ComputerKeyUpAction(key="ctrl"),
@@ -379,9 +382,11 @@ default_config = Config(
                     "down": ComputerKeyDownAction(key="ctrl"),
                     "up": ComputerKeyUpAction(key="ctrl"),
                 },
-                "shoulder_zr": {
-                    "down": ComputerKeyDownAction(key="enter"),
-                    "up": ComputerKeyUpAction(key="enter"),
+                "shoulder_l": {
+                    "click": SwitchModeAction(mode="typing"),
+                },
+                "shoulder_r": {
+                    "click": SwitchModeAction(mode="typing"),
                 },
             },
             stick_actions={
