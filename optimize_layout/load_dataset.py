@@ -68,3 +68,5 @@ if __name__ == "__main__":
             not_allowed_chars[char] = not_allowed_chars.get(char, 0) + 1
     print(f"Number of not allowed characters: {len(not_allowed_chars)}")
     print(f"Not allowed characters: {not_allowed_chars}")
+    others = "erpato_l.{>bg(yvsd=mc/-i;&#06hkqz,):1x%?|\\$!`nfwu\"5}][+€°~nfwu'32487^9"
+    print(f"allowed chars not in others: {''.join(sorted(set(my_chars) - set(others)))}")

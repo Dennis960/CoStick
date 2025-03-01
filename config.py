@@ -1,12 +1,11 @@
 from pydantic import BaseModel
 from typing import Literal
 import os
+from costick_input import KeyboardKey, MouseButtonName
 
 ModeName = Literal["default", "global"] | str
+"""Name of a mode."""
 
-KeyboardKey = str
-"""A key on the keyboard. For example: "a", "b", "c", "1", "2", "3", "up", "down", "left", "right" etc."""
-MouseButtonName = Literal["left", "middle", "right"]
 """A mouse button."""
 ControllerButtonName = Literal[
     "dpad_up",

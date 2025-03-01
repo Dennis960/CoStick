@@ -2,16 +2,10 @@ from controller import Controller
 import time
 from controller_overlay import ControllerOverlay
 from config import *
-from pynput.keyboard import Controller as KeyboardController, Key
-from pynput.mouse import Controller as MouseController, Button
-import subprocess
-import sys
+from costick_input import Keyboard, Mouse
 
-keyboard = KeyboardController()
-mouse = MouseController()
-
-SIMPLE_CHARS = "123456789abcdefghijklmnopqrstuvwxyz "
-COMPLEX_CHARS = "|{[]}\\~@€"
+keyboard = Keyboard()
+mouse = Mouse()
 
 
 class Cursor:
@@ -34,41 +28,22 @@ class Cursor:
         if not skip_setup:
             self.setup()
 
-    def key_down(self, key: str):
-        if key in SIMPLE_CHARS:
-            keyboard.press(key)
-        elif sys.platform == "linux" and key in COMPLEX_CHARS:
-            subprocess.run(["xdotool", "type", key])
-        else:
-            keyboard.type(key)
-
-    def key_up(self, key: str):
-        if key in SIMPLE_CHARS:
-            keyboard.release(key)
-        else:
-            # ignore, key has already been typed
-            pass
-
     def execute_action(self, action: ComputerAction | SwitchModeAction):
         if action.action == "switch_mode":
             self.toggle_mode(action.mode)
         elif action.action == "key_down":
-            self.key_down(action.key)
+            keyboard.press(action.key)
         elif action.action == "key_up":
-            self.key_up(action.key)
+            keyboard.release(action.key)
         elif action.action == "mouse_down":
-            button = Button.left if action.button == "left" else Button.right
-            mouse.press(button)
+            mouse.press(action.button)
         elif action.action == "mouse_up":
-            button = Button.left if action.button == "left" else Button.right
-            mouse.release(button)
+            mouse.release(action.button)
         elif action.action == "type":
-            for char in action.text:
-                self.key_down(char)
-                self.key_up(char)
+            keyboard.type(action.text)
         elif action.action == "key_press":
-            self.key_down(char)
-            self.key_up(char)
+            keyboard.press(action.key)
+            keyboard.release(action.key)
         else:
             print(f"Action {action.action} not found")
 
@@ -188,14 +163,6 @@ class Cursor:
                 )
 
     def setup(self):
-        if sys.platform == "linux":
-            # check if xdotool is installed
-            try:
-                subprocess.run(["xdotool", "--version"], check=True)
-            except subprocess.CalledProcessError:
-                print(
-                    "xdotool not found. Please install it to use all features by running 'sudo apt install xdotool'"
-                )
         self.toggle_mode("default")
 
     def on_update_stick_move_event(
