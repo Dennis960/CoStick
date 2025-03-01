@@ -1,21 +1,28 @@
 from controller import Controller
 import time
-
 from controller_overlay import ControllerOverlay
 from config import *
-import pyautogui
+from pynput.keyboard import Controller as KeyboardController, Key
+from pynput.mouse import Controller as MouseController, Button
+import subprocess
+import sys
 
-# Remove pyautogui delays
-pyautogui.PAUSE = 0
-# Remove pyautogui failsafes
-pyautogui.FAILSAFE = False
+keyboard = KeyboardController()
+mouse = MouseController()
+
+SIMPLE_CHARS = "123456789abcdefghijklmnopqrstuvwxyz "
+COMPLEX_CHARS = "|{[]}\\~@€"
 
 
 class Cursor:
     mode: Mode
 
     def __init__(
-        self, window: ControllerOverlay, controller: Controller, config: Config
+        self,
+        window: ControllerOverlay,
+        controller: Controller,
+        config: Config,
+        skip_setup=False,
     ):
         self.window = window
         self.controller = controller
@@ -24,23 +31,44 @@ class Cursor:
         self.boost = False
         self.boost_start_time = None
         self.target_scroll = 0
-        self.setup()
+        if not skip_setup:
+            self.setup()
+
+    def key_down(self, key: str):
+        if key in SIMPLE_CHARS:
+            keyboard.press(key)
+        elif sys.platform == "linux" and key in COMPLEX_CHARS:
+            subprocess.run(["xdotool", "type", key])
+        else:
+            keyboard.type(key)
+
+    def key_up(self, key: str):
+        if key in SIMPLE_CHARS:
+            keyboard.release(key)
+        else:
+            # ignore, key has already been typed
+            pass
 
     def execute_action(self, action: ComputerAction | SwitchModeAction):
         if action.action == "switch_mode":
             self.toggle_mode(action.mode)
         elif action.action == "key_down":
-            pyautogui.keyDown(action.key)
+            self.key_down(action.key)
         elif action.action == "key_up":
-            pyautogui.keyUp(action.key)
+            self.key_up(action.key)
         elif action.action == "mouse_down":
-            pyautogui.mouseDown(button=action.button)
+            button = Button.left if action.button == "left" else Button.right
+            mouse.press(button)
         elif action.action == "mouse_up":
-            pyautogui.mouseUp(button=action.button)
+            button = Button.left if action.button == "left" else Button.right
+            mouse.release(button)
         elif action.action == "type":
-            pyautogui.typewrite(action.text)
+            for char in action.text:
+                self.key_down(char)
+                self.key_up(char)
         elif action.action == "key_press":
-            pyautogui.press(action.key)
+            self.key_down(char)
+            self.key_up(char)
         else:
             print(f"Action {action.action} not found")
 
@@ -160,6 +188,14 @@ class Cursor:
                 )
 
     def setup(self):
+        if sys.platform == "linux":
+            # check if xdotool is installed
+            try:
+                subprocess.run(["xdotool", "--version"], check=True)
+            except subprocess.CalledProcessError:
+                print(
+                    "xdotool not found. Please install it to use all features by running 'sudo apt install xdotool'"
+                )
         self.toggle_mode("default")
 
     def on_update_stick_move_event(
@@ -251,7 +287,7 @@ class Cursor:
             * self.config.settings.cursor_settings.cursor_speed_pixels_per_second
             * delta_time
         )
-        pyautogui.moveRel(distance_x, distance_y)
+        mouse.move(distance_x, distance_y)
 
     def scroll(self, y_value, x_value, delta_time):
         if (y_value > 0) != (self.target_scroll > 0):
@@ -262,4 +298,12 @@ class Cursor:
         if abs(self.target_scroll) >= 1:
             scroll_amount = int(self.target_scroll)
             self.target_scroll -= scroll_amount
-            pyautogui.scroll(-scroll_amount)
+            mouse.scroll(0, -scroll_amount)
+
+
+if __name__ == "__main__":
+    chars = "1234567890ß!\"$%&/()=?'+#-.,*'_:;<>|{[]}\\~@€^`°qwertzuiopüasdfghjklöäyxcvbnmQWERTZUIOPÜASDFGHJKLÖÄYXCVBNM \n\t"
+    cursor = Cursor(None, None, None, True)
+    for char in chars:
+        print(f"keyboard.press('{char}')")
+        cursor.execute_action(ComputerTypeAction(text=char))
