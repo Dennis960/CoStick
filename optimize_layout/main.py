@@ -3,6 +3,7 @@ from controller_mapping import ControllerMapping, simulate_iterations
 import matplotlib.pyplot as plt
 import pynput
 import time
+import random
 
 
 def init_plot():
@@ -65,8 +66,8 @@ for i in range(len(data_subset) - 1):
 best_map = ControllerMapping.random().map
 best_difficulty = float("inf")
 best_map_index = 0
-mutate_random_after_no_change_amount = 20
-number_of_mutations = 5
+mutate_random_after_no_change_amount = 10000
+max_number_of_mutations = 5
 
 mapping = ControllerMapping(best_map)
 
@@ -118,6 +119,8 @@ with pynput.keyboard.Listener(on_press=on_press) as listener:
                 print("Stopping")
                 break
             if total_iterations - best_map_index > mutate_random_after_no_change_amount:
+                # random number of mutations
+                number_of_mutations = random.randint(1, max_number_of_mutations)
                 mapping = mapping.mutate_random(number_of_mutations)
                 break
             fps_counter.start()
