@@ -1,4 +1,4 @@
 pyside6
 pygame
-pyautogui
 pydantic
+pynput

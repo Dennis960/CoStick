@@ -1,6 +1,6 @@
 # CoStick
 
-CoStick is a tool created with pygame and pyautogui to control the mouse and keyboard with a nintendo switch (or similar) controller.
+CoStick is a tool created with pygame and pynput to control the mouse and keyboard with a nintendo switch (or similar) controller.
 
 It fully replaces mouse and keyboard input with a controller, and is designed to be used with a controller only.
 
