@@ -46,9 +46,10 @@ def string_to_pynput_compatible(key: KeyboardKey) -> Key | str:
         return Key.right
     elif key == "esc":
         return Key.esc
+    else:
+        return key
 
 
-SIMPLE_CHARS: list[KeyboardKey] = list("123456789abcdefghijklmnopqrstuvwxyz ")
 MODIFIERS: list[KeyboardKey] = ["shift", "ctrl", "alt", "cmd"]
 SPECIAL_KEYS: list[KeyboardKey] = [
     "space",
@@ -96,23 +97,18 @@ class Keyboard:
         self.keyboard.type(text)
 
     def press(self, key: KeyboardKey):
-        if key in SPECIAL_KEYS or key in MODIFIERS:
+        if key in MODIFIERS or key in SPECIAL_KEYS or not has_xdotool:
             self.keyboard.press(string_to_pynput_compatible(key))
-        elif key in SIMPLE_CHARS or not has_xdotool:
-            self.keyboard.press(key)
         else:
             subprocess.run(["xdotool", "type", key])
 
     def release(self, key: KeyboardKey):
-        if key in SPECIAL_KEYS or key in MODIFIERS:
+        if key in MODIFIERS or key in SPECIAL_KEYS or not has_xdotool:
             self.keyboard.release(string_to_pynput_compatible(key))
-        elif key in SIMPLE_CHARS or not has_xdotool:
-            self.keyboard.release(key)
 
 
 class Mouse:
     def __init__(self):
-        check_xdotool_installation()
         self.mouse = MouseController()
 
     def press(self, button: MouseButtonName):
