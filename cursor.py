@@ -200,6 +200,9 @@ class Cursor:
             print(f"Action {action.action} not found")
 
     def update(self):
+        """
+        Called every frame. Updates the cursor position and scrolls the mouse if necessary.
+        """
         current_time = time.time()
         delta_time = current_time - self.last_time
         self.last_time = current_time
