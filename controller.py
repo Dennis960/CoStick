@@ -1,10 +1,9 @@
 import pygame
 from pygame.locals import *
-from typing import Callable, Self
+from typing import Callable
 import time
 from config import *
 import threading
-import uuid
 from event_listener import EventListener
 
 
