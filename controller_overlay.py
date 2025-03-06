@@ -214,19 +214,6 @@ class ControllerOverlay(QWidget):
             self.buttons[button_name].set_highlighted(True)
 
 
-class Trainer:
-    """
-    The trainer is a helper class to highlight buttons that should be pressed next and
-    unhighlight them when they are pressed
-    """
-
-    def __init__(self, controller_overlay: ControllerOverlay):
-        self.controller_overlay = controller_overlay
-
-    def highlight_buttons(self, button_names: list[ControllerButtonName]):
-        self.controller_overlay.highlight_buttons(button_names)
-
-
 if __name__ == "__main__":
     import sys
     from PySide6.QtWidgets import QApplication
@@ -242,24 +229,6 @@ if __name__ == "__main__":
     controller = Controller(config)
 
     window.init_controller_event_listeners(controller)
-
-    # Debug
-    button_names: list[ControllerButtonName] = [
-        "face_right",
-        "shoulder_l",
-    ]
-    window.highlight_buttons(button_names)
-
-    listener_id = controller.multi_button_events.add_event_listener(
-        "down",
-        button_names,
-        lambda buttons: (
-            print("Down"),
-            window.highlight_buttons([]),
-            controller.multi_button_events.remove_event_listener(listener_id),
-        ),
-    )
-    # Debug end
 
     controller_thread = threading.Thread(target=controller.run)
     controller_thread.start()
