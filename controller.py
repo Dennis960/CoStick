@@ -1,13 +1,14 @@
 import pygame
 from pygame.locals import *
 from typing import Callable, Self
-from dataclasses import dataclass
 import time
 from config import *
 import threading
+import uuid
+from event_listener import EventListener
 
 
-class Button:
+class Button(EventListener[ControllerButtonEventName, "Button"]):
     def __init__(
         self, name: str, index: ControllerButtonIndex, settings: ControllerSettings
     ):
@@ -28,39 +29,11 @@ class Button:
         self.last_double_click_time = 0
         """Time of the last double click in seconds"""
 
+        super().__init__()
         # Event listeners
-        self.event_listeners: list[
-            tuple[ControllerButtonEventName, Callable[[Self], None]]
-        ] = []
-
-    def add_event_listener(
-        self,
-        controller_button_event_name: ControllerButtonEventName,
-        listener: Callable[[Self], None],
-    ):
-        """Add a listener for the given event."""
-        self.event_listeners.append((controller_button_event_name, listener))
-
-    def get_event_listeners(
-        self, controller_button_event_name: ControllerButtonEventName
-    ):
-        """Get all listeners for the given event."""
-        return [
-            listener
-            for event_name, listener in self.event_listeners
-            if event_name == controller_button_event_name
-        ]
-
-    def call_event_listeners(
-        self, controller_stick_event_name: ControllerStickEventName
-    ):
-        """Call all listeners for the given event in the order they were added."""
-        for listener in self.get_event_listeners(controller_stick_event_name):
-            listener(self)
-
-    def remove_all_event_listeners(self):
-        """Remove all event listeners"""
-        self.event_listeners = []
+        self.event_listeners: dict[
+            uuid.UUID, tuple[ControllerButtonEventName, Callable[[Self], None]]
+        ] = {}
 
     def _down(self):
         """Has to be called when the button is pressed down"""
@@ -101,7 +74,7 @@ class Button:
         return self.name
 
 
-class Stick:
+class Stick(EventListener[ControllerStickEventName, "Stick"]):
     def __init__(
         self,
         name: str,
@@ -118,39 +91,7 @@ class Stick:
         self.x = 0
         self.y = 0
 
-        # Event listeners
-        self.event_listeners: list[
-            tuple[ControllerStickEventName, Callable[[Self], None]]
-        ] = []
-
-    def add_event_listener(
-        self,
-        controller_stick_event_name: ControllerStickEventName,
-        listener: Callable[[Self], None],
-    ):
-        """Add a listener for the given event."""
-        self.event_listeners.append((controller_stick_event_name, listener))
-
-    def get_event_listeners(
-        self, controller_stick_event_name: ControllerStickEventName
-    ):
-        """Get all listeners for the given event."""
-        return [
-            listener
-            for event_name, listener in self.event_listeners
-            if event_name == controller_stick_event_name
-        ]
-
-    def call_event_listeners(
-        self, controller_stick_event_name: ControllerStickEventName
-    ):
-        """Call all listeners for the given event in the order they were added."""
-        for listener in self.get_event_listeners(controller_stick_event_name):
-            listener(self)
-
-    def remove_all_event_listeners(self):
-        """Remove all listeners"""
-        self.event_listeners = []
+        super().__init__()
 
     def _move_x(self, value):
         """Has to be called when the joystick axis changes value. Ignores movements within the deadzone. Does not ignore going into and out of the deadzone."""
@@ -180,6 +121,55 @@ class Stick:
         return self.name
 
 
+class MultiButtonEvents(
+    EventListener[
+        tuple[ControllerButtonEventName, list[ControllerButtonName]], list[Button]
+    ]
+):
+    def get_event_listeners(self, event_trigger):
+        event_name, event_button_names = event_trigger
+        return [
+            listener
+            for (e_name, button_names), listener in self._event_listeners.values()
+            if e_name == event_name and set(button_names) == set(event_button_names)
+        ]
+
+    def add_event_listener(
+        self,
+        controller_button_event_name: ControllerButtonEventName,
+        controller_button_names: list[ControllerButtonName],
+        listener: Callable[[list[Button]], None],
+    ):
+        """Add a listener for the multi button event."""
+        return super().add_event_listener(
+            (controller_button_event_name, controller_button_names), listener
+        )
+
+    def get_multi_button_event_listeners(
+        self,
+        controller_button_event_name: ControllerButtonEventName,
+        buttons: list[Button],
+    ):
+        """Get all listeners for the given event."""
+        return self.get_event_listeners(
+            (
+                controller_button_event_name,
+                list([button.name for button in buttons]),
+            )
+        )
+
+    def call_event_listeners(
+        self,
+        controller_button_event_name: ControllerButtonEventName,
+        buttons: list[Button],
+    ):
+        """Call all listeners for the given event in the order they were added."""
+        return super().call_event_listeners(
+            (controller_button_event_name, [button.name for button in buttons]),
+            buttons,
+        )
+
+
 class Controller:
     Stick = Stick
     Button = Button
@@ -192,6 +182,7 @@ class Controller:
 
         self.initialize_buttons()
         self.initialize_sticks()
+        self.initialize_multi_button_events()
 
         self.pygame_controller = None
 
@@ -215,60 +206,14 @@ class Controller:
         self.multi_button_last_double_click_time = 0
         """Time of the last multi button double click in seconds"""
 
-        # Event listeners
-        self.multi_button_event_listeners: list[
-            tuple[
-                ControllerButtonEventName,
-                list[ControllerButtonName],
-                Callable[[list[Button]], None],
-            ]
-        ] = []
-
-    def add_multi_button_event_listener(
-        self,
-        controller_button_event_name: ControllerButtonEventName,
-        controller_button_names: list[ControllerButtonName],
-        listener: Callable[[list[Button]], None],
-    ):
-        """Add a listener for the multi button event."""
-        self.multi_button_event_listeners.append(
-            (controller_button_event_name, controller_button_names, listener)
-        )
-
-    def get_event_listeners(
-        self,
-        controller_button_event_name: ControllerButtonEventName,
-        buttons: list[Button],
-    ):
-        """Get all listeners for the given event."""
-        return [
-            listener
-            for event_name, event_controller_button_names, listener in self.multi_button_event_listeners
-            if event_name == controller_button_event_name
-            and set(event_controller_button_names)
-            == set([button.name for button in buttons])
-        ]
-
-    def call_event_listeners(
-        self,
-        controller_stick_event_name: ControllerStickEventName,
-        buttons: list[Button],
-    ):
-        """Call all listeners for the given event in the order they were added."""
-        for listener in self.get_event_listeners(controller_stick_event_name, buttons):
-            listener(buttons)
+        super().__init__()
 
     def remove_all_event_listeners(self):
         for button in self.buttons.values():
             button.remove_all_event_listeners()
         for stick in self.sticks.values():
             stick.remove_all_event_listeners()
-        self.multi_button_event_listeners = []
-        if self.multi_button_event_timer:
-            self.multi_button_event_timer.cancel()
-        self.multi_button_event_timer = None
-        self.is_multi_buttons_pressed = False
-        self.multi_button_event_buttons = []
+        self.multi_button_events.remove_all_event_listeners()
 
     def initialize_buttons(self):
         self.buttons: dict[ControllerButtonName, Button] = {}
@@ -297,10 +242,13 @@ class Controller:
             )
             self.sticks |= {controller_stick_name: stick}
 
+    def initialize_multi_button_events(self):
+        self.multi_button_events = MultiButtonEvents()
+
     def get_buttons_allowed_for_multi_button_event(self) -> list[Button]:
         """Return a list of all buttons that are part of any multi button event."""
         allowed_button_names = []
-        for _, button_names, _ in self.multi_button_event_listeners:
+        for (_, button_names), _ in self.multi_button_events._event_listeners.values():
             for button_name in button_names:
                 if button_name not in allowed_button_names:
                     allowed_button_names.append(button_name)
@@ -318,7 +266,9 @@ class Controller:
         """Has to be called when the multi button down event was triggerd."""
         self.is_multi_buttons_pressed = True
         self.multi_button_pressed_time_start = time.time()
-        self.call_event_listeners("down", self.multi_button_event_buttons)
+        self.multi_button_events.call_event_listeners(
+            "down", self.multi_button_event_buttons
+        )
         self.multi_button_event_timer = None
         is_same_buttons_as_last_time = set(
             [button.name for button in self.multi_button_event_buttons]
@@ -329,7 +279,7 @@ class Controller:
             <= self.config.settings.controller_settings.double_click_duration
             and is_same_buttons_as_last_time
         ):
-            self.call_event_listeners(
+            self.multi_button_events.call_event_listeners(
                 "tripple_click", self.last_multi_button_event_buttons
             )
             self.multi_button_last_double_click_time = 0
@@ -339,7 +289,7 @@ class Controller:
             <= self.config.settings.controller_settings.double_click_duration
             and is_same_buttons_as_last_time
         ):
-            self.call_event_listeners(
+            self.multi_button_events.call_event_listeners(
                 "double_click", self.last_multi_button_event_buttons
             )
             self.multi_button_last_double_click_time = (
@@ -351,7 +301,9 @@ class Controller:
         self.is_multi_buttons_pressed = False
         self.multi_button_pressed_time_end = time.time()
 
-        self.call_event_listeners("up", self.multi_button_event_buttons)
+        self.multi_button_events.call_event_listeners(
+            "up", self.multi_button_event_buttons
+        )
         self.last_multi_button_event_buttons = self.multi_button_event_buttons
 
         press_duration = (
@@ -362,9 +314,13 @@ class Controller:
             press_duration
             > self.config.settings.controller_settings.single_click_duration
         ):
-            self.call_event_listeners("long_press", self.multi_button_event_buttons)
+            self.multi_button_events.call_event_listeners(
+                "long_press", self.multi_button_event_buttons
+            )
         else:
-            self.call_event_listeners("click", self.multi_button_event_buttons)
+            self.multi_button_events.call_event_listeners(
+                "click", self.multi_button_event_buttons
+            )
             self.multi_button_last_click_time = self.multi_button_pressed_time_end
         self.multi_button_event_buttons = []
 
@@ -529,7 +485,7 @@ if __name__ == "__main__":
         "double_click",
         "tripple_click",
     ]:
-        controller.add_multi_button_event_listener(
+        controller.multi_button_events.add_event_listener(
             event_type,
             ["shoulder_l", "shoulder_r"],
             lambda buttons, event_type=event_type: print(

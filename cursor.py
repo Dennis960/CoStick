@@ -170,7 +170,7 @@ class Cursor:
             ) in multi_button_action.actions.items():
                 if not isinstance(actions, list):
                     actions = [actions]
-                self.controller.add_multi_button_event_listener(
+                self.controller.multi_button_events.add_event_listener(
                     controller_button_event_name,
                     multi_button_action.buttons,
                     lambda buttons, actions=actions: self.on_multi_button_event(
