@@ -23,11 +23,11 @@ if __name__ == "__main__":
     controller_thread = threading.Thread(target=controller.run)
     controller_thread.start()
 
-    update_manager = Cursor(window, controller, config)
+    cursor = Cursor(window, controller, config)
 
     timer = QTimer()
     timer.setTimerType(Qt.TimerType.PreciseTimer)
-    timer.timeout.connect(update_manager.update)
+    timer.timeout.connect(cursor.update)
     timer.start(16)  # Approximately 60 FPS
 
     app.exec()

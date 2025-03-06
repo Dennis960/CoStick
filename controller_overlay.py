@@ -5,17 +5,32 @@ from PySide6.QtGui import QMouseEvent, QPaintEvent, QImage
 from controller import Controller
 
 
-class JoystickWidget(QWidget):
+button_pressed_color = Qt.GlobalColor.gray
+button_default_color = Qt.GlobalColor.white
+
+
+class ButtonWidget(QWidget):
+    color = button_default_color
+
+    def set_pressed(self, pressed):
+        self.color = button_pressed_color if pressed else button_default_color
+        self.update()
+
+    def get_button_painter(self):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setBrush(self.color)
+        painter.setPen(self.color)
+        return painter
+
+
+class JoystickWidget(ButtonWidget):
     def __init__(self, position, diameter, parent=None):
         super().__init__(parent)
         self.position = position
         self.diameter = diameter
-        self.pressed = False
+        self.color = button_default_color
         self.setGeometry(position[0], position[1], diameter, diameter)
-
-    def set_pressed(self, pressed):
-        self.pressed = pressed
-        self.update()
 
     def move_to(self, x, y):
         """
@@ -27,13 +42,11 @@ class JoystickWidget(QWidget):
         )
 
     def paintEvent(self, event: QPaintEvent):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(Qt.GlobalColor.gray if self.pressed else Qt.GlobalColor.white)
+        painter = self.get_button_painter()
         painter.drawEllipse(0, 0, self.diameter, self.diameter)
 
 
-class FaceButtonWidget(QWidget):
+class FaceButtonWidget(ButtonWidget):
     def __init__(self, position, diameter, label, parent=None):
         super().__init__(parent)
         self.position = position
@@ -42,54 +55,36 @@ class FaceButtonWidget(QWidget):
         self.pressed = False
         self.setGeometry(position[0], position[1], diameter, diameter)
 
-    def set_pressed(self, pressed):
-        self.pressed = pressed
-        self.update()
-
     def paintEvent(self, event: QPaintEvent):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(Qt.GlobalColor.gray if self.pressed else Qt.GlobalColor.white)
+        painter = self.get_button_painter()
         painter.drawEllipse(0, 0, self.diameter, self.diameter)
         painter.setPen(QPen(Qt.GlobalColor.black))
         painter.drawText(self.diameter / 2 - 4, self.diameter / 2 + 5, self.label)
 
 
-class DpadButtonWidget(QWidget):
+class DpadButtonWidget(ButtonWidget):
     def __init__(self, position, size, direction, parent=None):
         super().__init__(parent)
         self.position = position
         self.size = size
         self.direction = direction
-        self.pressed = False
         self.setGeometry(position[0], position[1], size, size)
 
-    def set_pressed(self, pressed):
-        self.pressed = pressed
-        self.update()
-
     def paintEvent(self, event: QPaintEvent):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(Qt.GlobalColor.gray if self.pressed else Qt.GlobalColor.white)
+        painter = self.get_button_painter()
         painter.drawRect(0, 0, self.size, self.size)
 
 
-class ShoulderButtonWidget(QWidget):
+class ShoulderButtonWidget(ButtonWidget):
     def __init__(self, outline, parent=None):
         super().__init__(parent)
         self.outline = outline
-        self.pressed = False
-        self.setGeometry(0, 0, 330, 215)  # Assuming the size of the controller
-
-    def set_pressed(self, pressed):
-        self.pressed = pressed
-        self.update()
+        max_x = max(x for x, y in outline)
+        max_y = max(y for x, y in outline)
+        self.setGeometry(0, 0, max_x, max_y)
 
     def paintEvent(self, event: QPaintEvent):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(Qt.GlobalColor.gray if self.pressed else Qt.GlobalColor.white)
+        painter = self.get_button_painter()
         painter.drawPolygon(QPolygonF([QPointF(*point) for point in self.outline]))
 
 
@@ -201,3 +196,27 @@ class ControllerOverlay(QWidget):
         controller.sticks["stick_left"].add_event_listener("move", lambda joystick: self.left_joystick.move_to(joystick.x, joystick.y))
         controller.sticks["stick_right"].add_event_listener("move", lambda joystick: self.right_joystick.move_to(joystick.x, joystick.y))
         # fmt: on
+
+
+if __name__ == "__main__":
+    import sys
+    from PySide6.QtWidgets import QApplication
+    from controller import Controller
+    from config import Config
+    import threading
+
+    app = QApplication(sys.argv)
+    window = ControllerOverlay()
+    window.show()
+
+    config = Config.load_config()
+    controller = Controller(config)
+
+    window.init_controller_event_listeners(controller)
+
+    controller_thread = threading.Thread(target=controller.run)
+    controller_thread.start()
+
+    app.exec()
+    controller.running = False
+    controller_thread.join()
