@@ -12,6 +12,8 @@ class Button(EventListener[ControllerButtonEventName, "Button"]):
     def __init__(
         self, name: str, index: ControllerButtonIndex, settings: ControllerSettings
     ):
+        super().__init__()
+
         self.name = name
         self.index: ControllerButtonIndex = index
         self.settings = settings
@@ -28,12 +30,6 @@ class Button(EventListener[ControllerButtonEventName, "Button"]):
         """Time of the release of the last click in seconds"""
         self.last_double_click_time = 0
         """Time of the last double click in seconds"""
-
-        super().__init__()
-        # Event listeners
-        self.event_listeners: dict[
-            uuid.UUID, tuple[ControllerButtonEventName, Callable[[Self], None]]
-        ] = {}
 
     def _down(self):
         """Has to be called when the button is pressed down"""
@@ -82,6 +78,8 @@ class Stick(EventListener[ControllerStickEventName, "Stick"]):
         axis_y_index: int,
         settings: ControllerSettings,
     ):
+        super().__init__()
+
         self.name = name
         self.axis_x_index = axis_x_index
         self.axis_y_index = axis_y_index
@@ -90,8 +88,6 @@ class Stick(EventListener[ControllerStickEventName, "Stick"]):
         # State
         self.x = 0
         self.y = 0
-
-        super().__init__()
 
     def _move_x(self, value):
         """Has to be called when the joystick axis changes value. Ignores movements within the deadzone. Does not ignore going into and out of the deadzone."""
@@ -175,6 +171,8 @@ class Controller:
     Button = Button
 
     def __init__(self, config: Config):
+        super().__init__()
+
         # Initialize Pygame
         pygame.init()
 
@@ -182,7 +180,7 @@ class Controller:
 
         self.initialize_buttons()
         self.initialize_sticks()
-        self.initialize_multi_button_events()
+        self.multi_button_events = MultiButtonEvents()
 
         self.pygame_controller = None
 
@@ -205,8 +203,6 @@ class Controller:
         """Time of the release of the last multi button click in seconds"""
         self.multi_button_last_double_click_time = 0
         """Time of the last multi button double click in seconds"""
-
-        super().__init__()
 
     def remove_all_event_listeners(self):
         for button in self.buttons.values():
@@ -241,9 +237,6 @@ class Controller:
                 settings=self.config.settings.controller_settings,
             )
             self.sticks |= {controller_stick_name: stick}
-
-    def initialize_multi_button_events(self):
-        self.multi_button_events = MultiButtonEvents()
 
     def get_buttons_allowed_for_multi_button_event(self) -> list[Button]:
         """Return a list of all buttons that are part of any multi button event."""
