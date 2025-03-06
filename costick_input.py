@@ -1,7 +1,6 @@
-from pynput.keyboard import Key, KeyCode
-from typing import Literal
-from pynput.keyboard import Controller as KeyboardController
+from pynput.keyboard import Controller as KeyboardController, Key
 from pynput.mouse import Controller as MouseController, Button
+from typing import Literal
 import subprocess
 import sys
 
@@ -12,7 +11,7 @@ KeyboardKey = Literal[
     "ü","ß","!",'"',"$","%","&","/","(",")","=","?","'","+","#","-",".",",","*",
     "'","_",":",";","<",">","|","{","[","]","}","\\","~","@","€","^","`","°",
     "space","enter","tab","backspace","alt","ctrl","shift","cmd","up","down",
-    "left","right","esc"
+    "left","right","esc","pos1","end"
 ]
 """A key on the keyboard."""
 # fmt: on
@@ -46,6 +45,10 @@ def string_to_pynput_compatible(key: KeyboardKey) -> Key | str:
         return Key.right
     elif key == "esc":
         return Key.esc
+    elif key == "pos1":
+        return Key.home
+    elif key == "end":
+        return Key.end
     else:
         return key
 
@@ -65,6 +68,8 @@ SPECIAL_KEYS: list[KeyboardKey] = [
     "left",
     "right",
     "esc",
+    "pos1",
+    "end",
 ]
 
 

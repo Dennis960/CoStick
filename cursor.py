@@ -2,7 +2,7 @@ from controller import Controller
 import time
 from controller_overlay import ControllerOverlay
 from config import *
-from costick_input import Keyboard, Mouse
+from costick_input import Keyboard, Mouse, KeyboardKey, MouseButtonName
 
 keyboard = Keyboard()
 mouse = Mouse()
@@ -24,7 +24,10 @@ class Cursor:
         self.last_time = time.time()
         self.boost = False
         self.boost_start_time = None
-        self.target_scroll = 0
+        self.target_scroll = 0  # used for mouse scrolling
+        self.target_distance_x = 0  # used for mouse movement
+        self.target_distance_y = 0  # used for mouse movement
+        self.pressed_keys: list[KeyboardKey] = []
         if not skip_setup:
             self.setup()
 
@@ -32,9 +35,13 @@ class Cursor:
         if action.action == "switch_mode":
             self.toggle_mode(action.mode)
         elif action.action == "key_down":
-            keyboard.press(action.key)
+            if action.key not in self.pressed_keys:
+                self.pressed_keys.append(action.key)
+                keyboard.press(action.key)
         elif action.action == "key_up":
-            keyboard.release(action.key)
+            if action.key in self.pressed_keys:
+                self.pressed_keys.remove(action.key)
+                keyboard.release(action.key)
         elif action.action == "mouse_down":
             mouse.press(action.button)
         elif action.action == "mouse_up":
@@ -97,8 +104,17 @@ class Cursor:
         for action in actions:
             self.execute_action(action)
 
+    def release_all_keyboard_buttons(self):
+        """
+        Used to release all keyboard buttons when switching modes. This will prevent buttons from being stuck.
+        """
+        for key in self.pressed_keys:
+            keyboard.release(key)
+        self.pressed_keys = []
+
     def toggle_mode(self, mode_name: str):
         print(f"Switching to mode {mode_name}")
+        self.release_all_keyboard_buttons()
         self.controller.remove_all_event_listeners()
         self.window.init_controller_event_listeners(
             self.controller
@@ -204,7 +220,12 @@ class Cursor:
                     else:
                         print(f"Event {controller_stick_event_name} not found")
 
-    def move_cursor(self, x_value, y_value, delta_time):
+    def get_cursor_speed(self, x_value, y_value):
+        """
+        Returns the target speed of the cursor based on the x and y values of the stick.
+        Uses an exponential function to calculate the speed.
+        Applies boost if the stick is pushed to the edge.
+        """
         speed = pow(pow(x_value, 2) + pow(y_value, 2), 0.5)  # Between 0 and 1
         is_boosting = False
         if speed > 0.95:
@@ -241,20 +262,38 @@ class Cursor:
             speed = 0
         else:
             speed = 1.5 * pow(2.4, 4.3 * (speed - 1.1))  # ~ Between 0 and 1
+        return speed
+
+    def move_cursor(self, x_value, y_value, delta_time):
+        speed = self.get_cursor_speed(x_value, y_value)
 
         x_value *= speed
         y_value *= speed
         distance_x = (
-            x_value
-            * self.config.settings.cursor_settings.cursor_speed_pixels_per_second
-            * delta_time
+            x_value * self.config.settings.cursor_settings.cursor_speed * delta_time
         )
         distance_y = (
-            y_value
-            * self.config.settings.cursor_settings.cursor_speed_pixels_per_second
-            * delta_time
+            y_value * self.config.settings.cursor_settings.cursor_speed * delta_time
         )
-        mouse.move(distance_x, distance_y)
+        # distances might be too small to move the cursor, so accumulate the distances over time and move the curser when the accumulated distance is bigger than 1
+        # 1. Get accumulated distance. If cursor switches direction, reset accumulated distance
+        if (x_value > 0) != (self.target_distance_x > 0):
+            self.target_distance_x = 0
+        if (y_value > 0) != (self.target_distance_y > 0):
+            self.target_distance_y = 0
+        # 2. Add new distance to accumulated distance
+        self.target_distance_x += distance_x
+        self.target_distance_y += distance_y
+        # 3. If accumulated distance is bigger than 1, move the cursor by a hole integer and subtract the integer from the accumulated distance
+        target_distance_x = 0
+        target_distance_y = 0
+        if abs(self.target_distance_x) >= 1:
+            target_distance_x = int(self.target_distance_x)
+            self.target_distance_x -= target_distance_x
+        if abs(self.target_distance_y) >= 1:
+            target_distance_y = int(self.target_distance_y)
+            self.target_distance_y -= target_distance_y
+        mouse.move(target_distance_x, target_distance_y)
 
     def scroll(self, y_value, x_value, delta_time):
         if (y_value > 0) != (self.target_scroll > 0):

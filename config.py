@@ -62,7 +62,7 @@ class ControllerSettings(BaseModel):
 class CursorSettings(BaseModel):
     """Settings for the cursor."""
 
-    cursor_speed_pixels_per_second: int
+    cursor_speed: int
     """Cursor will move at this speed in normal mode"""
     cursor_boost_speed: int
     """Cursor will move at this speed when boosting"""
@@ -234,7 +234,7 @@ default_config = Config(
             multi_click_duration=0.2,
         ),
         cursor_settings=CursorSettings(
-            cursor_speed_pixels_per_second=500,
+            cursor_speed=500,
             cursor_boost_speed=10,
             cursor_boost_acceleration_delay=0.1,
             cursor_boost_acceleration_time=0.5,
@@ -271,6 +271,10 @@ default_config = Config(
                 "home": {
                     "down": SwitchModeAction(mode="default"),
                 },
+                "capture": {
+                    "down": ComputerKeyDownAction(key="esc"),
+                    "up": ComputerKeyUpAction(key="esc"),
+                },
                 "minus": {
                     "down": [
                         ComputerKeyDownAction(key="ctrl"),
@@ -297,25 +301,21 @@ default_config = Config(
             button_actions={
                 "dpad_up": {
                     "down": [
-                        ComputerKeyDownAction(key="up"),
                         SwitchModeAction(mode="selection"),
                     ],
                 },
                 "dpad_down": {
                     "down": [
-                        ComputerKeyDownAction(key="down"),
                         SwitchModeAction(mode="selection"),
                     ],
                 },
                 "dpad_left": {
                     "down": [
-                        ComputerKeyDownAction(key="left"),
                         SwitchModeAction(mode="selection"),
                     ],
                 },
                 "dpad_right": {
                     "down": [
-                        ComputerKeyDownAction(key="right"),
                         SwitchModeAction(mode="selection"),
                     ],
                 },
@@ -339,11 +339,16 @@ default_config = Config(
                     "click": SwitchModeAction(mode="typing"),
                 },
                 "shoulder_r": {
-                    "click": SwitchModeAction(mode="typing"),
+                    "down": ComputerKeyDownAction(key="alt"),
+                    "up": ComputerKeyUpAction(key="alt"),
                 },
                 "shoulder_zr": {
                     "down": ComputerKeyDownAction(key="ctrl"),
                     "up": ComputerKeyUpAction(key="ctrl"),
+                },
+                "shoulder_zl": {
+                    "down": ComputerKeyDownAction(key="shift"),
+                    "up": ComputerKeyUpAction(key="shift"),
                 },
             },
             stick_actions={
@@ -361,6 +366,10 @@ default_config = Config(
                     "down": ComputerKeyDownAction(key="up"),
                     "up": ComputerKeyUpAction(key="up"),
                 },
+                "dpad_right": {
+                    "down": ComputerKeyDownAction(key="right"),
+                    "up": ComputerKeyUpAction(key="right"),
+                },
                 "dpad_down": {
                     "down": ComputerKeyDownAction(key="down"),
                     "up": ComputerKeyUpAction(key="down"),
@@ -369,15 +378,19 @@ default_config = Config(
                     "down": ComputerKeyDownAction(key="left"),
                     "up": ComputerKeyUpAction(key="left"),
                 },
-                "dpad_right": {
-                    "down": ComputerKeyDownAction(key="right"),
-                    "up": ComputerKeyUpAction(key="right"),
-                },
-                "face_right": {
+                "face_up": {
                     "down": ComputerKeyDownAction(key="shift"),
                     "up": ComputerKeyUpAction(key="shift"),
                 },
+                "face_right": {
+                    "down": ComputerKeyDownAction(key="cmd"),
+                    "up": ComputerKeyUpAction(key="cmd"),
+                },
                 "face_down": {
+                    "down": ComputerKeyDownAction(key="alt"),
+                    "up": ComputerKeyUpAction(key="alt"),
+                },
+                "stick_left": {
                     "down": ComputerKeyDownAction(key="ctrl"),
                     "up": ComputerKeyUpAction(key="ctrl"),
                 },
@@ -386,6 +399,14 @@ default_config = Config(
                 },
                 "shoulder_r": {
                     "click": SwitchModeAction(mode="typing"),
+                },
+                "shoulder_zl": {
+                    "down": ComputerKeyDownAction(key="pos1"),
+                    "up": ComputerKeyUpAction(key="pos1"),
+                },
+                "shoulder_zr": {
+                    "down": ComputerKeyDownAction(key="end"),
+                    "up": ComputerKeyUpAction(key="end"),
                 },
             },
             stick_actions={
@@ -403,10 +424,6 @@ default_config = Config(
                     "down": ComputerKeyDownAction(key="shift"),
                     "up": ComputerKeyUpAction(key="shift"),
                 },
-                "dpad_left": {
-                    "down": ComputerKeyDownAction(key="ctrl"),
-                    "up": ComputerKeyUpAction(key="ctrl"),
-                },
                 "dpad_right": {
                     "down": ComputerKeyDownAction(key="cmd"),
                     "up": ComputerKeyUpAction(key="cmd"),
@@ -414,6 +431,10 @@ default_config = Config(
                 "dpad_down": {
                     "down": ComputerKeyDownAction(key="alt"),
                     "up": ComputerKeyUpAction(key="alt"),
+                },
+                "dpad_left": {
+                    "down": ComputerKeyDownAction(key="ctrl"),
+                    "up": ComputerKeyUpAction(key="ctrl"),
                 },
             },
             stick_actions={
